@@ -1,0 +1,14 @@
+{% extends "base.html" %}
+{% block title %}Admin — {{ app_name }}{% endblock %}
+{% block content %}
+<h1>Content admin</h1>
+<div class="card-grid">
+  {% for slug, label in modules.items() %}
+    <div class="card">
+      <h2 style="margin-top:0">{{ label }}</h2>
+      <p class="lead">{{ counts[slug] }} questions</p>
+      <a class="btn btn-small btn-outline" href="{{ url_for('admin.module_questions', module_slug=slug) }}">Manage</a>
+    </div>
+  {% endfor %}
+</div>
+{% endblock %}

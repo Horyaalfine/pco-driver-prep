@@ -1,0 +1,32 @@
+{% extends "base.html" %}
+{% block title %}Dashboard — {{ app_name }}{% endblock %}
+{% block content %}
+<h1>Your dashboard</h1>
+
+{% if not has_access %}
+  <div class="card" style="border-color:#b3261e">
+    <p><strong>Your access has ended.</strong> Choose an option to carry on preparing.</p>
+    <a class="btn btn-accent" href="{{ url_for('billing.pricing') }}">View options</a>
+  </div>
+{% endif %}
+
+<div class="card-grid">
+  {% for slug, label in modules.items() %}
+    <div class="card">
+      <h2 style="margin-top:0">{{ label }}</h2>
+      {% set p = progress[slug] %}
+      <p class="lead">
+        {% if p.best_mock_score is not none %}
+          Best mock exam score: <strong>{{ p.best_mock_score }}%</strong>
+        {% else %}
+          No mock exam attempted yet
+        {% endif %}
+        &middot; {{ p.questions_answered }} questions answered
+      </p>
+      {% if has_access %}
+        <a class="btn btn-small btn-outline" href="{{ url_for('learning.module_home', module_slug=slug) }}">Open</a>
+      {% endif %}
+    </div>
+  {% endfor %}
+</div>
+{% endblock %}

@@ -1,0 +1,25 @@
+{% extends "base.html" %}
+{% block title %}Mock exam result — {{ module_label }}{% endblock %}
+{% block content %}
+<h1>Mock exam result — {{ module_label }}</h1>
+<div class="card">
+  <p class="price">{{ attempt.score_percent }}%<span> score</span></p>
+  <p class="lead">{{ attempt.answers|length }} questions answered</p>
+</div>
+
+<h2>Review</h2>
+{% for a in attempt.answers %}
+  <div class="question-card">
+    <p><strong>{{ loop.index }}. {{ a.question.prompt }}</strong></p>
+    {% if a.is_correct %}
+      <p style="color:#0a5c44">Your answer: {{ a.choice.text if a.choice else "—" }} — correct</p>
+    {% else %}
+      <p style="color:#b3261e">Your answer: {{ a.choice.text if a.choice else "No answer" }} — incorrect</p>
+      <p>Correct answer: {{ a.question.correct_choice.text if a.question.correct_choice else "—" }}</p>
+    {% endif %}
+    {% if a.question.explanation %}<p class="lead">{{ a.question.explanation }}</p>{% endif %}
+  </div>
+{% endfor %}
+
+<a class="btn btn-accent" href="{{ url_for('learning.module_home', module_slug=attempt.module_slug) }}">Back to module</a>
+{% endblock %}

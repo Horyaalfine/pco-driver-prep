@@ -1,0 +1,8 @@
+{% if is_correct %}
+  <p style="color:#0a5c44"><strong>Correct.</strong></p>
+{% else %}
+  <p style="color:#b3261e"><strong>Not quite.</strong> The correct answer is: {{ correct_choice.text if correct_choice else "—" }}</p>
+{% endif %}
+{% if question.explanation %}
+  <p class="lead">{{ question.explanation }}</p>
+{% endif %}

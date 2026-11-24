@@ -1,0 +1,29 @@
+{% extends "base.html" %}
+{% block title %}{{ module_label }} — {{ app_name }}{% endblock %}
+{% block content %}
+<h1>{{ module_label }}</h1>
+<p class="lead">{{ question_count }} questions available{% if progress.best_mock_score is not none %} &middot; best mock score {{ progress.best_mock_score }}%{% endif %}</p>
+
+<div class="card">
+  <h2 style="margin-top:0">Practice</h2>
+  <p class="lead">Untimed, with explanations after each answer. Good for learning a topic before testing yourself.</p>
+  <form method="get" action="{{ url_for('learning.practice', module_slug=module_slug) }}">
+    {% if topics %}
+    <label for="topic">Focus on a topic (optional)</label>
+    <select name="topic" id="topic" style="max-width:320px">
+      <option value="">All topics</option>
+      {% for t in topics %}<option value="{{ t }}">{{ t }}</option>{% endfor %}
+    </select>
+    {% endif %}
+    <div style="margin-top:12px"><button class="btn btn-outline" type="submit">Start practice</button></div>
+  </form>
+</div>
+
+<div class="card">
+  <h2 style="margin-top:0">Mock exam</h2>
+  <p class="lead">Timed, scored, mirrors the real assessment format. Counts toward your best score on the dashboard.</p>
+  <form method="post" action="{{ url_for('learning.start_mock_exam', module_slug=module_slug) }}">
+    <button class="btn btn-accent" type="submit">Start mock exam</button>
+  </form>
+</div>
+{% endblock %}

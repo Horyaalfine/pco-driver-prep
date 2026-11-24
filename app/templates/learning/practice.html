@@ -1,0 +1,42 @@
+{% extends "base.html" %}
+{% block title %}Practice — {{ module_label }}{% endblock %}
+{% block content %}
+<h1>Practice — {{ module_label }}</h1>
+<p class="lead">Pick an answer to see instant feedback and an explanation.</p>
+
+{% for q in questions %}
+  <div class="question-card" id="question-{{ q.id }}">
+    <p><strong>{{ loop.index }}. {{ q.prompt }}</strong></p>
+    <form class="practice-form" data-question-id="{{ q.id }}">
+      {% for c in q.choices %}
+        <label class="choice-row">
+          <input type="radio" name="choice_id" value="{{ c.id }}" required>
+          {{ c.text }}
+        </label>
+      {% endfor %}
+      <button class="btn btn-small btn-outline" type="submit" style="margin-top:8px">Check answer</button>
+    </form>
+    <div class="feedback" id="feedback-{{ q.id }}"></div>
+  </div>
+{% endfor %}
+
+<a class="btn btn-accent" href="{{ url_for('learning.module_home', module_slug=module_slug) }}">Back to module</a>
+
+<script>
+const attemptId = {{ attempt_id }};
+document.querySelectorAll('.practice-form').forEach(form => {
+  form.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const questionId = form.dataset.questionId;
+    const choice = form.querySelector('input[name=choice_id]:checked');
+    if (!choice) return;
+    const body = new URLSearchParams({question_id: questionId, choice_id: choice.value});
+    const resp = await fetch(`/practice/${attemptId}/answer`, {method: 'POST', body});
+    const html = await resp.text();
+    document.getElementById(`feedback-${questionId}`).innerHTML = html;
+    form.querySelectorAll('input').forEach(i => i.disabled = true);
+    form.querySelector('button').disabled = true;
+  });
+});
+</script>
+{% endblock %}

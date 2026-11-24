@@ -1,0 +1,42 @@
+{% extends "base.html" %}
+{% block title %}Pricing — {{ app_name }}{% endblock %}
+{% block content %}
+<h1>Pricing</h1>
+
+{% if has_access %}
+  <div class="card">
+    <p><strong>You have full access.</strong></p>
+    {% if current_user.continuation_active %}
+      <p class="lead">You're on the £{{ "%.0f"|format(continuation_price) }}/month continuation plan. Cancel any time — no notice needed.</p>
+      <form method="post" action="{{ url_for('billing.cancel_continuation') }}" onsubmit="return confirm('Cancel your subscription? You will keep access until the end of the current billing period.');">
+        <button class="btn btn-outline" type="submit">Cancel subscription</button>
+      </form>
+    {% else %}
+      <p class="lead">Access until {{ current_user.access_until.strftime('%d %B %Y') }}.</p>
+    {% endif %}
+  </div>
+{% else %}
+  <div class="pricing-grid">
+    <div class="card">
+      <h2 style="margin-top:0">Full access</h2>
+      <p class="price">£{{ "%.0f"|format(initial_price) }}<span>/ {{ (initial_days / 30)|round|int }} months</span></p>
+      <p class="lead">All three modules — English, SERU and Topographical — with unlimited practice and mock exams.</p>
+      <form method="post" action="{{ url_for('billing.checkout_initial') }}">
+        <button class="btn btn-accent" type="submit">Get started — £{{ "%.0f"|format(initial_price) }}</button>
+      </form>
+    </div>
+
+    {% if ever_purchased %}
+    <div class="card">
+      <h2 style="margin-top:0">Continue after your {{ (initial_days / 30)|round|int }} months</h2>
+      <p class="price">£{{ "%.0f"|format(continuation_price) }}<span>/month</span></p>
+      <p class="lead">Still working through the assessments? Keep going at a lower monthly rate. Cancel whenever you like — there's no notice period and no auto-renewal trap.</p>
+      <form method="post" action="{{ url_for('billing.checkout_continuation') }}">
+        <button class="btn btn-outline" type="submit">Continue — £{{ "%.0f"|format(continuation_price) }}/month</button>
+      </form>
+    </div>
+    {% endif %}
+  </div>
+  <p class="lead" style="margin-top:20px">Nothing ever renews automatically. When your access ends, we'll email you the choice to continue at £{{ "%.0f"|format(continuation_price) }}/month — only if you want to.</p>
+{% endif %}
+{% endblock %}

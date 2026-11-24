@@ -1,0 +1,13 @@
+{% extends "base.html" %}
+{% block title %}{{ app_name }} — Pass your TfL PCO assessments{% endblock %}
+{% block content %}
+<h1>Pass your TfL PCO assessments, first time</h1>
+<p class="lead">Structured e-learning, practice questions and timed mock exams for all three TfL private hire driver assessments — English Language Requirement, SERU, and the Topographical test.</p>
+<div class="card-grid">
+  {% for slug, label in modules.items() %}
+    <div class="card"><h2 style="margin-top:0">{{ label }}</h2></div>
+  {% endfor %}
+</div>
+<p><a class="btn btn-accent" href="{{ url_for('auth.register') }}">Get started</a></p>
+<p class="lead" style="font-size:0.85rem">We're an independent exam-preparation provider — not affiliated with or endorsed by Transport for London.</p>
+{% endblock %}

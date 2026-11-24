@@ -1,0 +1,22 @@
+{% extends "base.html" %}
+{% block title %}Create your account — {{ app_name }}{% endblock %}
+{% block content %}
+<h1>Create your account</h1>
+<p class="lead">Get started preparing for your TfL English, SERU, and topographical assessments.</p>
+<form class="stack" method="post">
+  <div>
+    <label for="full_name">Full name</label>
+    <input type="text" id="full_name" name="full_name">
+  </div>
+  <div>
+    <label for="email">Email</label>
+    <input type="email" id="email" name="email" required>
+  </div>
+  <div>
+    <label for="password">Password</label>
+    <input type="password" id="password" name="password" required minlength="8">
+  </div>
+  <button class="btn btn-accent" type="submit">Create account</button>
+</form>
+<p>Already have an account? <a href="{{ url_for('auth.login') }}">Log in</a></p>
+{% endblock %}
