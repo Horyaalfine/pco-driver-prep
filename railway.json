@@ -5,6 +5,7 @@
   },
   "deploy": {
     "startCommand": "gunicorn run:app",
+    "preDeployCommand": "flask db upgrade",
     "restartPolicyType": "ON_FAILURE"
   }
 }

@@ -59,7 +59,11 @@ Test end-to-end with Stripe's test card `4242 4242 4242 4242` before going live.
 1. New Railway project → deploy from this repo (or `railway up` from this folder).
 2. Attach a PostgreSQL plugin — Railway sets `DATABASE_URL` automatically.
 3. Set the remaining environment variables from `.env.example` in the Railway service settings.
-4. The `release` phase in the `Procfile` runs `flask db upgrade` automatically on each deploy.
+4. `railway.json`'s `deploy.preDeployCommand` runs `flask db upgrade` automatically before
+   each deploy goes live — this runs with network access to other services (unlike a
+   Procfile `release:` line, which Railway's Nixpacks builder bakes in as a build-time step
+   with no access to other services' private network addresses, and which this app
+   deliberately does not use for that reason).
 5. **Set up the renewal-check cron job**: in Railway, add a second service (or a Railway
    Cron Job pointed at this same repo) running:
    ```
