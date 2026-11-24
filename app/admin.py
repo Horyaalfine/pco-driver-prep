@@ -1,14 +1,22 @@
 import hmac
+import secrets
 from functools import wraps
 
 from flask import Blueprint, current_app, render_template, redirect, url_for, flash, request, abort
 from flask_login import login_required, current_user
 
 from app.extensions import db
-from app.models import Question, Choice, MODULE_SLUGS, MODULE_LABELS
+from app.models import User, Question, Choice, MODULE_SLUGS, MODULE_LABELS
 from app.seed import run_seed
 
 admin_bp = Blueprint("admin", __name__)
+
+
+def _check_seed_token():
+    token = request.args.get("token", "")
+    expected = current_app.config.get("SEED_TOKEN") or current_app.config["SECRET_KEY"]
+    if not token or not expected or not hmac.compare_digest(token, expected):
+        abort(404)
 
 
 @admin_bp.route("/seed")
@@ -17,10 +25,7 @@ def seed_once():
     (e.g. Railway). Protected by the app's SECRET_KEY as a bearer token rather
     than a login, since there's no admin account to log in with yet on a brand
     new database. Safe to call more than once — it only adds what's missing."""
-    token = request.args.get("token", "")
-    expected = current_app.config.get("SEED_TOKEN") or current_app.config["SECRET_KEY"]
-    if not token or not expected or not hmac.compare_digest(token, expected):
-        abort(404)
+    _check_seed_token()
     summary, admin_created = run_seed()
     lines = list(summary)
     if admin_created:
@@ -28,6 +33,40 @@ def seed_once():
     else:
         lines.append("Admin user already existed — left as-is.")
     return "<br>".join(lines), 200
+
+
+@admin_bp.route("/create-admin")
+def create_admin():
+    """Create (or promote) an admin account by email, for when there's no
+    shell access to run this by hand. Same token-protected pattern as
+    /admin/seed. If the email already has an account, it's promoted to admin
+    in place and its password is left untouched. If not, a new account is
+    created with a randomly generated password shown once in the response —
+    nowhere else, so copy it immediately and change it after logging in."""
+    _check_seed_token()
+    email = (request.args.get("email") or "").strip().lower()
+    if not email or "@" not in email:
+        return "Missing or invalid ?email=", 400
+
+    user = User.query.filter_by(email=email).first()
+    if user:
+        if user.is_admin:
+            return f"{email} is already an admin. No changes made.", 200
+        user.is_admin = True
+        db.session.commit()
+        return f"{email} promoted to admin. Existing password unchanged.", 200
+
+    generated_password = secrets.token_urlsafe(12)
+    user = User(email=email, full_name="Admin", is_admin=True)
+    user.set_password(generated_password)
+    db.session.add(user)
+    db.session.commit()
+    return (
+        f"Created admin account.<br>Email: {email}<br>Password: {generated_password}"
+        "<br><br>This password is shown once and not stored anywhere else — "
+        "log in now and change it from your account settings.",
+        200,
+    )
 
 
 def admin_required(view):

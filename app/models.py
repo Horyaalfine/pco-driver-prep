@@ -58,7 +58,10 @@ class User(UserMixin, db.Model):
     def has_access(self) -> bool:
         """Single source of truth for "can this user use the paid content right now".
         True if still inside the initial paid window OR the opt-in continuation
-        subscription is active."""
+        subscription is active. Admins always have access — they manage the
+        question bank and shouldn't be paywalled out of the app they run."""
+        if self.is_admin:
+            return True
         if self.access_until and self.access_until > datetime.utcnow():
             return True
         return bool(self.continuation_active)

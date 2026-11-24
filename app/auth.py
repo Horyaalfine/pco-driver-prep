@@ -120,6 +120,27 @@ def reset_password(token):
     return render_template("auth/reset_password.html", token=token)
 
 
+@auth_bp.route("/account", methods=["GET", "POST"])
+@login_required
+def account():
+    """Change password while logged in — doesn't depend on email being
+    configured, unlike the forgot-password flow."""
+    if request.method == "POST":
+        current_password = request.form.get("current_password", "")
+        new_password = request.form.get("new_password", "")
+        if not current_user.check_password(current_password):
+            flash("Current password is incorrect.", "error")
+        elif len(new_password) < 8:
+            flash("New password must be at least 8 characters.", "error")
+        else:
+            current_user.set_password(new_password)
+            db.session.commit()
+            flash("Password updated.", "success")
+            return redirect(url_for("auth.account"))
+
+    return render_template("auth/account.html")
+
+
 def _send_reset_email(user: User, reset_url: str) -> None:
     msg = Message(
         subject=f"Reset your {current_app.config['APP_NAME']} password",
