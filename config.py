@@ -4,15 +4,21 @@ from datetime import timedelta
 
 
 def _normalize_database_url(raw: str) -> str:
-    """Force the plain psycopg2 dialect regardless of what scheme the host hands us.
+    """Force the psycopg2 dialect explicitly, regardless of what scheme the host hands us.
 
     Heroku/Railway-style URLs sometimes arrive as postgres://, and some Railway
-    Postgres templates hand out postgresql+psycopg:// (psycopg3) or
-    postgresql+psycopg2://. This app installs psycopg2-binary only (matching the
-    rest of the app suite's stack), so every variant is normalized down to plain
-    postgresql://, which SQLAlchemy resolves to psycopg2 by default.
+    Postgres templates hand out postgresql+psycopg:// (psycopg3) or an
+    unqualified postgresql://. This app installs psycopg2-binary only (matching
+    the rest of the app suite's stack) — and newer SQLAlchemy versions default
+    an unqualified postgresql:// to the psycopg3 driver rather than psycopg2,
+    so every variant is normalized to an explicit postgresql+psycopg2:// scheme
+    rather than relying on whatever the installed SQLAlchemy's default is.
+    SQLite URLs (used for local dev when DATABASE_URL is unset) pass through
+    unchanged.
     """
-    return re.sub(r"^postgres(ql)?(\+\w+)?://", "postgresql://", raw, count=1)
+    if raw.startswith("sqlite"):
+        return raw
+    return re.sub(r"^postgres(ql)?(\+\w+)?://", "postgresql+psycopg2://", raw, count=1)
 
 
 class Config:
