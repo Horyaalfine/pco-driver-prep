@@ -40,21 +40,39 @@ def create_admin():
     """Create (or promote) an admin account by email, for when there's no
     shell access to run this by hand. Same token-protected pattern as
     /admin/seed. If the email already has an account, it's promoted to admin
-    in place and its password is left untouched. If not, a new account is
-    created with a randomly generated password shown once in the response —
-    nowhere else, so copy it immediately and change it after logging in."""
+    in place and its password is left untouched — unless ?reset=1 is passed,
+    in which case a fresh password is generated and shown once, overwriting
+    whatever was there before. If the account doesn't exist yet, it's created
+    with a randomly generated password shown once in the response — nowhere
+    else, so copy it immediately and change it after logging in."""
     _check_seed_token()
     email = (request.args.get("email") or "").strip().lower()
+    reset = request.args.get("reset") == "1"
     if not email or "@" not in email:
         return "Missing or invalid ?email=", 400
 
     user = User.query.filter_by(email=email).first()
     if user:
-        if user.is_admin:
-            return f"{email} is already an admin. No changes made.", 200
-        user.is_admin = True
+        changed = []
+        if not user.is_admin:
+            user.is_admin = True
+            changed.append("promoted to admin")
+        if reset:
+            generated_password = secrets.token_urlsafe(12)
+            user.set_password(generated_password)
+            changed.append("password reset")
         db.session.commit()
-        return f"{email} promoted to admin. Existing password unchanged.", 200
+        if not changed:
+            return f"{email} is already an admin. No changes made.", 200
+        msg = f"{email}: {', '.join(changed)}."
+        if reset:
+            msg += (
+                f"<br>New password: {generated_password}"
+                "<br><br>This password is shown once and not stored anywhere else."
+            )
+        else:
+            msg += " Existing password unchanged."
+        return msg, 200
 
     generated_password = secrets.token_urlsafe(12)
     user = User(email=email, full_name="Admin", is_admin=True)
