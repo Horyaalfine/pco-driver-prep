@@ -18,8 +18,8 @@ def seed_once():
     than a login, since there's no admin account to log in with yet on a brand
     new database. Safe to call more than once — it only adds what's missing."""
     token = request.args.get("token", "")
-    expected = current_app.config["SECRET_KEY"]
-    if not token or not hmac.compare_digest(token, expected):
+    expected = current_app.config.get("SEED_TOKEN") or current_app.config["SECRET_KEY"]
+    if not token or not expected or not hmac.compare_digest(token, expected):
         abort(404)
     summary, admin_created = run_seed()
     lines = list(summary)

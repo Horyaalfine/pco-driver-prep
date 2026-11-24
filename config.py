@@ -24,6 +24,10 @@ def _normalize_database_url(raw: str) -> str:
 class Config:
     # --- Core ---
     SECRET_KEY = os.environ.get("SECRET_KEY", "dev-secret-change-me")
+    # One-time token for GET /admin/seed (see app/admin.py). Not required —
+    # falls back to SECRET_KEY if unset — but set independently is cleaner,
+    # since it can be removed/rotated without touching the app's real secret.
+    SEED_TOKEN = os.environ.get("SEED_TOKEN", "")
     SQLALCHEMY_DATABASE_URI = _normalize_database_url(
         os.environ.get("DATABASE_URL", "sqlite:///dev.db")
     )
