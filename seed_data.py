@@ -1,141 +1,28 @@
 """
 Seeds a handful of sample questions per module so the app is demoable and the
-admin UI has something to show. Replace/expand via the admin panel — this is
-not meant to be the real question bank, just a realistic starting shape.
+admin UI has something to show, and creates a first admin user if one
+doesn't exist yet. Replace/expand the real question bank via the admin
+panel — this is not meant to be the final question bank, just a realistic
+starting shape.
 
 Usage: python seed_data.py
+
+(For seeding a live deployment with no shell access — e.g. Railway — see
+the one-time /admin/seed?token=... route in app/admin.py instead, which
+calls the same app.seed.run_seed() function.)
 """
 from app import create_app
-from app.extensions import db
-from app.models import Question, Choice, User
-
-SEED_QUESTIONS = {
-    "elr": [
-        {
-            "topic": "Reading comprehension",
-            "prompt": "A passenger says: 'Could you drop me a bit further down, just past the lights?' What does the passenger want?",
-            "choices": [
-                ("To stop before the traffic lights", False),
-                ("To stop a short distance after the traffic lights", True),
-                ("To turn around at the lights", False),
-                ("To wait at the lights", False),
-            ],
-            "explanation": "'Further down, just past the lights' means a short distance beyond the lights, in the direction of travel.",
-        },
-        {
-            "topic": "Writing",
-            "prompt": "Which sentence is grammatically correct?",
-            "choices": [
-                ("I have drove this route many times.", False),
-                ("I have driven this route many times.", True),
-                ("I has driven this route many times.", False),
-                ("I driving this route many times.", False),
-            ],
-            "explanation": "'Driven' is the correct past participle of 'drive', used with 'have'.",
-        },
-    ],
-    "seru": [
-        {
-            "topic": "Safeguarding",
-            "prompt": "A passenger appears to be a lone child under 16 travelling without an adult late at night. What should you do?",
-            "choices": [
-                ("Carry the journey as normal and say nothing", False),
-                ("Refuse the booking outright with no explanation", False),
-                ("Follow your operator's safeguarding procedure and raise any concerns appropriately", True),
-                ("Ask the child for personal details to post online", False),
-            ],
-            "explanation": "Drivers are expected to be alert to safeguarding concerns and to follow their operator's procedure, in line with TfL's safeguarding awareness training.",
-        },
-        {
-            "topic": "Equality",
-            "prompt": "A passenger asks you to carry their guide dog. Under the Equality Act 2010, you must:",
-            "choices": [
-                ("Refuse if you have a personal allergy", False),
-                ("Carry the passenger and their guide dog unless you hold a valid medical exemption certificate", True),
-                ("Charge an extra fee for the dog", False),
-                ("Ask the passenger to leave the dog behind", False),
-            ],
-            "explanation": "Private hire drivers must carry assistance dogs at no extra charge unless they hold a valid, displayed medical exemption certificate.",
-        },
-        {
-            "topic": "Licensing requirements",
-            "prompt": "As a London private hire driver, you may only accept bookings that:",
-            "choices": [
-                ("Are pre-booked through a licensed operator", True),
-                ("You pick up by being hailed in the street", False),
-                ("Come from any unlicensed app", False),
-                ("Are agreed verbally with no booking record", False),
-            ],
-            "explanation": "Private hire vehicles cannot ply for hire — every journey must be pre-booked through a licensed operator.",
-        },
-    ],
-    "topographical": [
-        {
-            "topic": "Compass directions",
-            "prompt": "If you are travelling north and need to turn to face east, which way do you turn?",
-            "choices": [
-                ("Left", False),
-                ("Right", True),
-                ("Continue straight", False),
-                ("U-turn", False),
-            ],
-            "explanation": "Facing north, east is a 90-degree turn to the right.",
-        },
-        {
-            "topic": "Map symbols",
-            "prompt": "On a standard London street atlas, a one-way street is typically shown by:",
-            "choices": [
-                ("A dotted line", False),
-                ("An arrow along the road showing the direction of travel", True),
-                ("A red circle", False),
-                ("A green triangle", False),
-            ],
-            "explanation": "One-way streets are marked with directional arrows showing the only legal direction of travel.",
-        },
-        {
-            "topic": "Route planning",
-            "prompt": "When planning the most direct legal route between two points, you should prioritise:",
-            "choices": [
-                ("The shortest distance regardless of road restrictions", False),
-                ("The route that is both direct and complies with road signs and restrictions", True),
-                ("Whichever route avoids all traffic lights", False),
-                ("The route your satnav suggests, without checking it", False),
-            ],
-            "explanation": "The assessment tests your ability to plan a route that is both direct and legally compliant, not simply the shortest on a map.",
-        },
-    ],
-}
+from app.seed import run_seed
 
 
 def run():
     app = create_app()
     with app.app_context():
-        for module_slug, questions in SEED_QUESTIONS.items():
-            for item in questions:
-                existing = Question.query.filter_by(
-                    module_slug=module_slug, prompt=item["prompt"]
-                ).first()
-                if existing:
-                    continue
-                question = Question(
-                    module_slug=module_slug,
-                    topic=item["topic"],
-                    prompt=item["prompt"],
-                    explanation=item["explanation"],
-                )
-                db.session.add(question)
-                for text, is_correct in item["choices"]:
-                    db.session.add(Choice(question=question, text=text, is_correct=is_correct))
-            print(f"Seeded {len(questions)} questions for {module_slug}")
-        db.session.commit()
-
-        admin_email = "admin@example.com"
-        if not User.query.filter_by(email=admin_email).first():
-            admin = User(email=admin_email, full_name="Admin", is_admin=True)
-            admin.set_password("change-this-password")
-            db.session.add(admin)
-            db.session.commit()
-            print(f"Created admin user {admin_email} / change-this-password — change this immediately.")
+        summary, admin_created = run_seed()
+        for line in summary:
+            print(f"Seeded {line}")
+        if admin_created:
+            print("Created admin user admin@example.com / change-this-password — change this immediately.")
 
 
 if __name__ == "__main__":

@@ -1,12 +1,33 @@
+import hmac
 from functools import wraps
 
-from flask import Blueprint, render_template, redirect, url_for, flash, request, abort
+from flask import Blueprint, current_app, render_template, redirect, url_for, flash, request, abort
 from flask_login import login_required, current_user
 
 from app.extensions import db
 from app.models import Question, Choice, MODULE_SLUGS, MODULE_LABELS
+from app.seed import run_seed
 
 admin_bp = Blueprint("admin", __name__)
+
+
+@admin_bp.route("/seed")
+def seed_once():
+    """One-time bootstrap for a freshly-deployed database with no shell access
+    (e.g. Railway). Protected by the app's SECRET_KEY as a bearer token rather
+    than a login, since there's no admin account to log in with yet on a brand
+    new database. Safe to call more than once — it only adds what's missing."""
+    token = request.args.get("token", "")
+    expected = current_app.config["SECRET_KEY"]
+    if not token or not hmac.compare_digest(token, expected):
+        abort(404)
+    summary, admin_created = run_seed()
+    lines = list(summary)
+    if admin_created:
+        lines.append("Created admin user admin@example.com / change-this-password — log in and change this immediately.")
+    else:
+        lines.append("Admin user already existed — left as-is.")
+    return "<br>".join(lines), 200
 
 
 def admin_required(view):
