@@ -1,14 +1,25 @@
 import os
+import re
 from datetime import timedelta
+
+
+def _normalize_database_url(raw: str) -> str:
+    """Force the plain psycopg2 dialect regardless of what scheme the host hands us.
+
+    Heroku/Railway-style URLs sometimes arrive as postgres://, and some Railway
+    Postgres templates hand out postgresql+psycopg:// (psycopg3) or
+    postgresql+psycopg2://. This app installs psycopg2-binary only (matching the
+    rest of the app suite's stack), so every variant is normalized down to plain
+    postgresql://, which SQLAlchemy resolves to psycopg2 by default.
+    """
+    return re.sub(r"^postgres(ql)?(\+\w+)?://", "postgresql://", raw, count=1)
 
 
 class Config:
     # --- Core ---
     SECRET_KEY = os.environ.get("SECRET_KEY", "dev-secret-change-me")
-    SQLALCHEMY_DATABASE_URI = (
+    SQLALCHEMY_DATABASE_URI = _normalize_database_url(
         os.environ.get("DATABASE_URL", "sqlite:///dev.db")
-        # Railway/Heroku-style URLs sometimes come as postgres:// — SQLAlchemy needs postgresql://
-        .replace("postgres://", "postgresql://", 1)
     )
     SQLALCHEMY_TRACK_MODIFICATIONS = False
 
