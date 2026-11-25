@@ -243,3 +243,29 @@ class RouteAttempt(db.Model):
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
 
     user = db.relationship("User")
+
+
+# ---------------------------------------------------------------------------
+# ELR speaking practice. The real ELR assessment is a live speaking &
+# listening interview with a human interlocutor (11-13 minutes, pass mark
+# 60/100) — not a written test. Reading/writing is actually assessed via
+# SERU's sentence-completion component (see the existing elr Question rows,
+# which are genuinely reading/writing practice, honestly relabelled on the
+# module page rather than renamed in the DB to avoid churn).
+#
+# This is self-rehearsal content, not a graded exercise: a learner studies
+# the prompt, model answer and tips, then rehearses their own spoken answer
+# out loud. No recording/grading infrastructure — deliberately out of scope
+# for now (see the project's research doc for the considered alternatives).
+# ---------------------------------------------------------------------------
+
+class SpeakingPrompt(db.Model):
+    __tablename__ = "speaking_prompts"
+
+    id = db.Column(db.Integer, primary_key=True)
+    module_slug = db.Column(db.String(32), nullable=False, default="elr", index=True)
+    topic = db.Column(db.String(120))  # e.g. "Personal & background", "Driving scenarios"
+    prompt_text = db.Column(db.Text, nullable=False)
+    model_answer = db.Column(db.Text, nullable=False)
+    tips = db.Column(db.JSON, nullable=True)  # list of short strings
+    is_active = db.Column(db.Boolean, default=True, nullable=False)

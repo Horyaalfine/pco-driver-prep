@@ -1,0 +1,34 @@
+{% extends "base.html" %}
+{% block title %}Speaking practice — {{ module_label }} — {{ app_name }}{% endblock %}
+{% block content %}
+<a href="{{ url_for('learning.speaking_practice_list') }}">&larr; Back to speaking practice</a>
+<p class="pill pill-active" style="margin-top:12px">{{ prompt.topic }}</p>
+<h1 style="margin-top:8px">{{ prompt.prompt_text }}</h1>
+
+<div class="card">
+  <h2 style="margin-top:0">Now try it yourself</h2>
+  <p class="lead">Before reading on, say your own answer out loud — ideally timed, as you would in the real interview. Then compare it to the model answer and tips below.</p>
+</div>
+
+<div class="card">
+  <h2 style="margin-top:0">Model answer</h2>
+  <p>{{ prompt.model_answer }}</p>
+</div>
+
+{% if prompt.tips %}
+<div class="card">
+  <h2 style="margin-top:0">Tips</h2>
+  <ul>
+    {% for tip in prompt.tips %}<li>{{ tip }}</li>{% endfor %}
+  </ul>
+</div>
+{% endif %}
+
+<div style="margin-top:16px">
+  {% if next_id %}
+    <a class="btn btn-accent" href="{{ url_for('learning.speaking_practice_detail', prompt_id=next_id) }}">Next prompt &rarr;</a>
+  {% else %}
+    <a class="btn btn-accent" href="{{ url_for('learning.speaking_practice_list') }}">Back to list</a>
+  {% endif %}
+</div>
+{% endblock %}

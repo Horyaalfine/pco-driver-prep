@@ -2,10 +2,21 @@
 {% block title %}{{ module_label }} — {{ app_name }}{% endblock %}
 {% block content %}
 <h1>{{ module_label }}</h1>
+
+{% if module_slug == 'elr' %}
+<p class="lead">The real ELR assessment is a live speaking &amp; listening interview with a human interlocutor (11-13 minutes, pass mark 60/100) — it isn't a written test. Reading &amp; writing is actually assessed through TfL's SERU paper. This module gives you both: speaking practice for the real interview, and reading &amp; writing practice questions in the style SERU uses to test it.</p>
+
+<div class="card">
+  <h2 style="margin-top:0">Speaking practice (real ELR format)</h2>
+  <p class="lead">Interview-style prompts with model answers and tips — study each one, then rehearse your own answer out loud.</p>
+  <a class="btn btn-accent" href="{{ url_for('learning.speaking_practice_list') }}">Start speaking practice</a>
+</div>
+{% endif %}
+
 <p class="lead">{{ question_count }} questions available{% if progress.best_mock_score is not none %} &middot; best mock score {{ progress.best_mock_score }}%{% endif %}</p>
 
 <div class="card">
-  <h2 style="margin-top:0">Practice</h2>
+  <h2 style="margin-top:0">{% if module_slug == 'elr' %}Reading & writing practice{% else %}Practice{% endif %}</h2>
   <p class="lead">Untimed, with explanations after each answer. Good for learning a topic before testing yourself.</p>
   <form method="get" action="{{ url_for('learning.practice', module_slug=module_slug) }}">
     {% if topics %}
@@ -20,7 +31,7 @@
 </div>
 
 <div class="card">
-  <h2 style="margin-top:0">Mock exam</h2>
+  <h2 style="margin-top:0">{% if module_slug == 'elr' %}Mock exam (reading & writing){% else %}Mock exam{% endif %}</h2>
   <p class="lead">Timed, scored, mirrors the real assessment format. Counts toward your best score on the dashboard.</p>
   <form method="post" action="{{ url_for('learning.start_mock_exam', module_slug=module_slug) }}">
     <button class="btn btn-accent" type="submit">Start mock exam</button>

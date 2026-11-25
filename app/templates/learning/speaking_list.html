@@ -1,0 +1,18 @@
+{% extends "base.html" %}
+{% block title %}Speaking practice — {{ module_label }} — {{ app_name }}{% endblock %}
+{% block content %}
+<h1>Speaking practice</h1>
+<p class="lead">The real ELR assessment is a live speaking &amp; listening interview with a human interlocutor (11-13 minutes, pass mark 60/100) — not a written test. Study each prompt below, then rehearse your own answer out loud. There's no recording here; this is for self-practice.</p>
+
+{% set current_topic = None %}
+{% for p in prompts %}
+  {% if p.topic != current_topic %}
+    {% set current_topic = p.topic %}
+    <h2 style="margin-top:28px">{{ current_topic }}</h2>
+  {% endif %}
+  <div class="card" style="margin-bottom:12px">
+    <p><strong>{{ p.prompt_text }}</strong></p>
+    <a class="btn btn-outline btn-small" href="{{ url_for('learning.speaking_practice_detail', prompt_id=p.id) }}">View model answer &amp; tips</a>
+  </div>
+{% endfor %}
+{% endblock %}

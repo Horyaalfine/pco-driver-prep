@@ -14,8 +14,9 @@ or any other source — see the project's research doc for the regulatory
 facts these are based on.
 """
 from app.extensions import db
-from app.models import Question, Choice, User, RouteMap, RouteScenario
+from app.models import Question, Choice, User, RouteMap, RouteScenario, SpeakingPrompt
 from app.route_maps_data import ROUTE_MAPS
+from app.speaking_prompts_data import SPEAKING_PROMPTS
 
 SEED_QUESTIONS = {
     "elr": [
@@ -812,6 +813,24 @@ def run_seed():
             scenarios_added += 1
     db.session.commit()
     summary.append(f"route maps: {maps_added} new map(s), {scenarios_added} new scenario(s) added")
+
+    speaking_added = 0
+    for item in SPEAKING_PROMPTS:
+        existing = SpeakingPrompt.query.filter_by(prompt_text=item["prompt_text"]).first()
+        if existing:
+            continue
+        db.session.add(
+            SpeakingPrompt(
+                module_slug="elr",
+                topic=item["topic"],
+                prompt_text=item["prompt_text"],
+                model_answer=item["model_answer"],
+                tips=item.get("tips"),
+            )
+        )
+        speaking_added += 1
+    db.session.commit()
+    summary.append(f"speaking prompts: {speaking_added} new prompt(s) added")
 
     admin_email = "admin@example.com"
     admin_created = False

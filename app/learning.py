@@ -11,6 +11,7 @@ from app.models import (
     AttemptAnswer,
     RouteScenario,
     RouteAttempt,
+    SpeakingPrompt,
     MODULE_SLUGS,
     MODULE_LABELS,
 )
@@ -371,3 +372,45 @@ def route_scenario_submit(scenario_id):
     db.session.commit()
 
     return result, 200
+
+
+# ---------------------------------------------------------------------------
+# ELR speaking practice. The real ELR test is a live speaking & listening
+# interview, not a written test — these are self-rehearsal prompts (study
+# the model answer and tips, then practise speaking your own answer out
+# loud), not a graded exercise. See app/models.py's SpeakingPrompt docstring.
+# ---------------------------------------------------------------------------
+
+@learning_bp.route("/module/elr/speaking")
+@requires_access
+def speaking_practice_list():
+    prompts = (
+        SpeakingPrompt.query.filter_by(module_slug="elr", is_active=True)
+        .order_by(SpeakingPrompt.topic, SpeakingPrompt.id)
+        .all()
+    )
+    return render_template(
+        "learning/speaking_list.html",
+        module_label=MODULE_LABELS["elr"],
+        prompts=prompts,
+    )
+
+
+@learning_bp.route("/module/elr/speaking/<int:prompt_id>")
+@requires_access
+def speaking_practice_detail(prompt_id):
+    prompt = SpeakingPrompt.query.get_or_404(prompt_id)
+    all_prompts = (
+        SpeakingPrompt.query.filter_by(module_slug="elr", is_active=True)
+        .order_by(SpeakingPrompt.topic, SpeakingPrompt.id)
+        .all()
+    )
+    ids = [p.id for p in all_prompts]
+    idx = ids.index(prompt.id) if prompt.id in ids else -1
+    next_id = ids[idx + 1] if 0 <= idx < len(ids) - 1 else None
+    return render_template(
+        "learning/speaking_detail.html",
+        module_label=MODULE_LABELS["elr"],
+        prompt=prompt,
+        next_id=next_id,
+    )
