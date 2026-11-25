@@ -218,4 +218,62 @@ SPEAKING_PROMPTS = [
             "A short closing reflection ('it taught me...') rounds the answer off naturally.",
         ],
     },
+
+    # --- Additional prompts (content-depth expansion) ---
+    {
+        "topic": "Personal & background",
+        "prompt_text": "What do you enjoy most about driving, and is there anything you find challenging about it?",
+        "model_answer": (
+            "I enjoy the independence of it — being out on the road, meeting different people, and not "
+            "being stuck behind a desk all day. The most challenging part is probably dealing with heavy "
+            "traffic during rush hour, but I've learned to plan around the busiest times where I can, and "
+            "to stay patient when I can't avoid it."
+        ),
+        "tips": [
+            "A balanced answer — something positive and something honest about a challenge — sounds more natural than an answer that's all positive.",
+            "Showing you manage a challenge (rather than just naming it) demonstrates maturity.",
+        ],
+    },
+    {
+        "topic": "Driving & London knowledge",
+        "prompt_text": "How would you find your way to a destination you've never been to before?",
+        "model_answer": (
+            "I'd normally rely on a satnav or mapping app to get the exact route, but I'd also look at the "
+            "general direction beforehand — for example, which part of London it's in — so I have a sense "
+            "of the journey even if the technology has an issue. If I had time, I'd also check for anything "
+            "unusual, like roadworks, along the planned route."
+        ),
+        "tips": [
+            "Mentioning a backup plan (knowing the general direction) if technology fails shows good preparation.",
+            "This answer works well with sequencing language: 'I'd normally... I'd also... if I had time...'",
+        ],
+    },
+    {
+        "topic": "Customer service scenarios",
+        "prompt_text": "A passenger asks you to help carry their luggage into a building. What would you do?",
+        "model_answer": (
+            "I'd be happy to help where I reasonably can, especially if the passenger has heavy bags or "
+            "additional needs. I'd make sure the vehicle was parked safely first, though, before leaving "
+            "it to help, and I'd use common sense about how far I can reasonably go, such as not leaving "
+            "the car unattended for too long in an inconvenient spot."
+        ),
+        "tips": [
+            "Good customer service combined with practical driver responsibilities (vehicle safety) makes for a well-rounded answer.",
+            "It's fine to set a reasonable boundary ('how far I can reasonably go') — examiners aren't expecting an unlimited promise.",
+        ],
+    },
+    {
+        "topic": "Problem-solving & describing a situation",
+        "prompt_text": "Describe how you would respond if a passenger left a mobile phone or wallet behind after a journey.",
+        "model_answer": (
+            "I'd check the vehicle as soon as it was safe to do so, and if I found something, I'd contact "
+            "my operator straight away so they could get in touch with the passenger. I wouldn't try to "
+            "arrange returning it myself without going through the proper process, since that keeps "
+            "everything accountable and safe for both sides."
+        ),
+        "tips": [
+            "Lost-property questions are really testing whether you know the proper channel (the operator) — always mention it.",
+            "Avoid describing an informal personal solution, even a well-meaning one — it should go through the operator.",
+        ],
+    },
 ]

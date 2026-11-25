@@ -116,4 +116,57 @@ ROUTE_MAPS = [
             },
         ],
     },
+    {
+        "slug": "training-map-3",
+        "name": "Training Map 3",
+        "data": {
+            "nodes": {
+                "K1": {"label": "North Depot", "x": 60, "y": 40},
+                "K2": {"label": "Crossroads", "x": 220, "y": 40},
+                "K3": {"label": "East Yard", "x": 380, "y": 40},
+                "K4": {"label": "Canal Bridge", "x": 60, "y": 160},
+                "K5": {"label": "Market Hall", "x": 220, "y": 160},
+                "K6": {"label": "Wharf Junction", "x": 380, "y": 160},
+                "K7": {"label": "South Gate", "x": 60, "y": 280},
+                "K8": {"label": "Clocktower Square", "x": 220, "y": 280},
+                "K9": {"label": "Industrial Gate", "x": 380, "y": 280},
+                "K10": {"label": "Ring Junction", "x": 500, "y": 160},
+            },
+            "edges": [
+                {"from": "K1", "to": "K2", "name": "Depot Road"},
+                {"from": "K2", "to": "K3", "name": "Crossroads Lane"},
+                {"from": "K1", "to": "K4", "name": "Canal Street"},
+                {"from": "K2", "to": "K5", "name": "Market Approach", "oneway": "forward"},
+                {"from": "K3", "to": "K6", "name": "Yard Road"},
+                {"from": "K4", "to": "K5", "name": "Bridge Lane"},
+                {"from": "K5", "to": "K6", "name": "Wharf Street", "oneway": "forward"},
+                {"from": "K4", "to": "K7", "name": "South Canal Road"},
+                {"from": "K5", "to": "K8", "name": "Clocktower Lane"},
+                {"from": "K6", "to": "K9", "name": "Industrial Road"},
+                {"from": "K6", "to": "K10", "name": "Ring Link"},
+                {"from": "K7", "to": "K8", "name": "Gate Row", "oneway": "forward"},
+                {"from": "K8", "to": "K9", "name": "Square Walk"},
+                {"from": "K9", "to": "K10", "name": "Ring Approach"},
+                {"from": "K3", "to": "K10", "name": "Outer Loop"},
+            ],
+        },
+        "scenarios": [
+            {
+                "start": "K10", "end": "K1",
+                "prompt": "Plan the most direct legal route from Ring Junction to North Depot.",
+            },
+            {
+                "start": "K1", "end": "K9",
+                "prompt": "Plan the most direct legal route from North Depot to Industrial Gate.",
+            },
+            {
+                "start": "K7", "end": "K2",
+                "prompt": "Plan the most direct legal route from South Gate to Crossroads. Watch the direction of the one-way streets.",
+            },
+            {
+                "start": "K3", "end": "K7",
+                "prompt": "Plan the most direct legal route from East Yard to South Gate. Two different one-way streets block the obvious-looking short cuts — look carefully at their direction.",
+            },
+        ],
+    },
 ]
