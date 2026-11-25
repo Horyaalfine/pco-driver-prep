@@ -395,6 +395,174 @@ SEED_QUESTIONS = {
             ],
             "explanation": "The safeguarding awareness training directly feeds into the SERU assessment, which tests understanding of safeguarding responsibilities among other regulatory topics.",
         },
+
+        # --- Fill-in-the-blank / sentence completion ---
+        # The real SERU paper includes sentence-completion items alongside
+        # multiple-choice. These have no Choice rows — they're graded against
+        # accepted_answers (case-insensitive, trimmed).
+        {
+            "topic": "Safeguarding",
+            "question_type": "fill_blank",
+            "prompt": "A driver who suspects a child passenger is at risk of harm should report their concern to the ____ as soon as possible.",
+            "accepted_answers": ["relevant authorities", "authorities", "police", "safeguarding authorities"],
+            "explanation": "Suspected harm to a child should be reported promptly to the relevant authorities (such as the police or a safeguarding body) — a driver should never investigate or confront the situation themselves.",
+        },
+        {
+            "topic": "Equality",
+            "question_type": "fill_blank",
+            "prompt": "Under the Equality Act 2010, refusing to carry a passenger's guide dog is a form of ____ against a disabled person.",
+            "accepted_answers": ["discrimination", "disability discrimination", "unlawful discrimination"],
+            "explanation": "Refusing an assistance dog without a valid medical exemption is unlawful discrimination under the Equality Act 2010.",
+        },
+        {
+            "topic": "Licensing",
+            "question_type": "fill_blank",
+            "prompt": "A private hire driver must hold a valid ____ licence issued by TfL before accepting any private hire bookings.",
+            "accepted_answers": ["private hire driver", "pco", "private hire driver's"],
+            "explanation": "Driving for private hire without a valid licence issued by TfL is illegal, regardless of insurance or vehicle condition.",
+        },
+        {
+            "topic": "Licensing",
+            "question_type": "fill_blank",
+            "prompt": "Private hire vehicles can only legally be booked in advance through a licensed private hire ____.",
+            "accepted_answers": ["operator", "private hire operator"],
+            "explanation": "Unlike licensed taxis, private hire vehicles cannot be hailed in the street or hired directly — all bookings must go through a licensed operator.",
+        },
+        {
+            "topic": "Professional conduct",
+            "question_type": "fill_blank",
+            "prompt": "A driver should never ____ a journey without good reason once a booking has been accepted, as this can leave a passenger stranded.",
+            "accepted_answers": ["cancel", "abandon"],
+            "explanation": "Cancelling an accepted booking without good reason is poor professional conduct and can leave a passenger, particularly a vulnerable one, stranded.",
+        },
+        {
+            "topic": "Professional conduct",
+            "question_type": "fill_blank",
+            "prompt": "Drivers must treat all passengers with courtesy and ____, regardless of their background or appearance.",
+            "accepted_answers": ["respect"],
+            "explanation": "Professional conduct standards require drivers to treat every passenger with courtesy and respect, without exception.",
+        },
+        {
+            "topic": "Road safety",
+            "question_type": "fill_blank",
+            "prompt": "Using a hand-held mobile phone while driving is illegal because it is a form of ____ driving.",
+            "accepted_answers": ["distracted"],
+            "explanation": "Hand-held phone use while driving is a specific, serious form of distracted driving and is prohibited by law.",
+        },
+        {
+            "topic": "Road safety",
+            "question_type": "fill_blank",
+            "prompt": "A driver who feels too tired to drive safely should stop and ____ rather than continue the journey.",
+            "accepted_answers": ["rest", "take a break"],
+            "explanation": "Fatigue significantly increases accident risk — the only safe response to feeling too tired to drive is to stop and rest.",
+        },
+        {
+            "topic": "Safeguarding",
+            "question_type": "fill_blank",
+            "prompt": "Drivers carrying unaccompanied children should be especially alert to signs of ____, as part of their safeguarding responsibility.",
+            "accepted_answers": ["exploitation", "abuse", "harm", "child exploitation"],
+            "explanation": "Unaccompanied children are a recognised higher-risk group, and drivers are expected to be alert to signs of exploitation or abuse as part of their safeguarding duty.",
+        },
+        {
+            "topic": "Equality",
+            "question_type": "fill_blank",
+            "prompt": "A driver should make reasonable ____ for a passenger with a disability, such as allowing extra time to board.",
+            "accepted_answers": ["adjustments", "accommodations"],
+            "explanation": "Making reasonable adjustments for disabled passengers, such as allowing extra time, is both good practice and a legal expectation.",
+        },
+        {
+            "topic": "Licensing",
+            "question_type": "fill_blank",
+            "prompt": "Failing to report a change of address to TfL within the required time can put a driver's ____ at risk.",
+            "accepted_answers": ["licence", "license"],
+            "explanation": "Licence conditions require drivers to keep TfL informed of changes such as address, and failing to do so can jeopardise the licence.",
+        },
+        {
+            "topic": "Professional conduct",
+            "question_type": "fill_blank",
+            "prompt": "A driver should keep their vehicle clean and well presented, as this reflects on their ____ as a licensed driver.",
+            "accepted_answers": ["professionalism", "professional standards", "reputation"],
+            "explanation": "Vehicle presentation is part of the professional standard expected of a licensed private hire driver.",
+        },
+        {
+            "topic": "Road safety",
+            "question_type": "fill_blank",
+            "prompt": "Drivers must ensure all passengers, including those in the rear seats, wear a seat ____ where required by law.",
+            "accepted_answers": ["belt"],
+            "explanation": "Seatbelt requirements apply to rear-seat passengers too, and the driver has a responsibility to ensure compliance where required.",
+        },
+        {
+            "topic": "Safeguarding",
+            "question_type": "fill_blank",
+            "prompt": "If a passenger discloses that they are being harmed, a driver's first responsibility is to listen and take the disclosure ____, not to investigate it themselves.",
+            "accepted_answers": ["seriously"],
+            "explanation": "A driver is not trained to investigate safeguarding disclosures — their role is to listen, take it seriously, and pass it on to the appropriate authority.",
+        },
+        {
+            "topic": "Equality",
+            "question_type": "fill_blank",
+            "prompt": "Charging a disabled passenger more than other passengers for the same journey because of their disability is a form of unlawful ____.",
+            "accepted_answers": ["discrimination"],
+            "explanation": "Charging a disabled passenger more for the same service because of their disability breaches the Equality Act 2010.",
+        },
+        {
+            "topic": "Licensing",
+            "question_type": "fill_blank",
+            "prompt": "A private hire vehicle must display a valid TfL licence ____ as required by the licensing conditions.",
+            "accepted_answers": ["plate", "disc", "licence plate"],
+            "explanation": "Licensed private hire vehicles must display the correct TfL licence plate/disc as a licensing condition.",
+        },
+        {
+            "topic": "Professional conduct",
+            "question_type": "fill_blank",
+            "prompt": "A driver who receives a complaint from a passenger should handle it ____ and professionally, rather than becoming defensive.",
+            "accepted_answers": ["calmly", "professionally"],
+            "explanation": "Professional conduct expectations include handling complaints calmly and constructively rather than reacting defensively.",
+        },
+
+        # --- Reading & understanding passages ---
+        # The real SERU paper includes short passages followed by a question.
+        # These use question_type "reading" and are graded like mcq (Choice
+        # rows), but the template shows the shared passage text above them.
+        {
+            "topic": "Reading & understanding",
+            "question_type": "reading",
+            "passage": (
+                "A private hire operator receives a booking from a regular customer who asks for "
+                "the 'usual driver.' The operator explains that all bookings must be allocated "
+                "through the licensed operator's booking system, and that a passenger cannot "
+                "request or be guaranteed a specific driver, even a regular one. The operator "
+                "allocates the job to whichever licensed driver is available and suitable for "
+                "the journey."
+            ),
+            "prompt": "According to the passage, why can't the customer be guaranteed their 'usual driver'?",
+            "choices": [
+                ("Because the usual driver has retired", False),
+                ("Because all bookings must go through the operator's system and be allocated to any available licensed driver, not a specific one", True),
+                ("Because the usual driver is not properly licensed", False),
+                ("Because the customer has not paid in advance", False),
+            ],
+            "explanation": "The passage states that bookings are allocated through the operator's system to whichever licensed driver is available and suitable — passengers can't request or be guaranteed a specific driver.",
+        },
+        {
+            "topic": "Reading & understanding",
+            "question_type": "reading",
+            "passage": (
+                "A driver notices that a passenger seems distressed during a journey and mentions "
+                "that they do not feel safe at home. The driver does not ask probing questions or "
+                "try to resolve the situation personally. Instead, once the journey is safely "
+                "complete, the driver passes on what was said to their operator, who has a "
+                "process for escalating safeguarding concerns raised by drivers."
+            ),
+            "prompt": "According to the passage, what did the driver do correctly after hearing the passenger's disclosure?",
+            "choices": [
+                ("Investigated the situation personally before continuing the journey", False),
+                ("Ignored the comment since it wasn't the driver's business", False),
+                ("Completed the journey safely and then passed the concern on to the operator's escalation process", True),
+                ("Confronted the passenger about their home situation", False),
+            ],
+            "explanation": "The passage describes exactly the expected response: don't investigate or probe personally, complete the journey safely, and escalate the concern through the proper channel (here, the operator's process).",
+        },
     ],
     "topographical": [
         {
@@ -606,9 +774,12 @@ def run_seed():
                 topic=item["topic"],
                 prompt=item["prompt"],
                 explanation=item["explanation"],
+                question_type=item.get("question_type", "mcq"),
+                accepted_answers=item.get("accepted_answers"),
+                passage=item.get("passage"),
             )
             db.session.add(question)
-            for text, is_correct in item["choices"]:
+            for text, is_correct in item.get("choices", []):
                 db.session.add(Choice(question=question, text=text, is_correct=is_correct))
             added += 1
         summary.append(f"{module_slug}: {added} new question(s) added")

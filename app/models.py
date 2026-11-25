@@ -103,6 +103,20 @@ class Question(db.Model):
     is_active = db.Column(db.Boolean, default=True, nullable=False)
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
 
+    # The real SERU exam mixes multiple-choice with sentence-completion
+    # ("fill_blank") and short reading-and-understanding passages ("reading")
+    # — see app/learning.py's SERU mock-exam composition. "mcq" (the
+    # original/default type) and "reading" are both graded via Choice rows;
+    # "fill_blank" has no choices at all and is graded against
+    # accepted_answers instead.
+    question_type = db.Column(db.String(20), default="mcq", nullable=False)
+    # For fill_blank: list of acceptable answer strings (matched
+    # case-insensitively, whitespace-trimmed). Null/unused for mcq/reading.
+    accepted_answers = db.Column(db.JSON, nullable=True)
+    # For reading: the shared passage text, shown once above the question.
+    # Null/unused for mcq/fill_blank.
+    passage = db.Column(db.Text, nullable=True)
+
     choices = db.relationship(
         "Choice", backref="question", cascade="all, delete-orphan", order_by="Choice.id"
     )
@@ -110,6 +124,14 @@ class Question(db.Model):
     @property
     def correct_choice(self):
         return next((c for c in self.choices if c.is_correct), None)
+
+    def grade_text_answer(self, raw_answer: str) -> bool:
+        """Grading for fill_blank questions: case-insensitive, trimmed match
+        against any of the accepted answers."""
+        if not raw_answer or not self.accepted_answers:
+            return False
+        normalised = raw_answer.strip().lower()
+        return any(normalised == accepted.strip().lower() for accepted in self.accepted_answers)
 
 
 class Choice(db.Model):
@@ -151,6 +173,8 @@ class AttemptAnswer(db.Model):
     attempt_id = db.Column(db.Integer, db.ForeignKey("attempts.id"), nullable=False)
     question_id = db.Column(db.Integer, db.ForeignKey("questions.id"), nullable=False)
     choice_id = db.Column(db.Integer, db.ForeignKey("choices.id"), nullable=True)
+    # Used instead of choice_id for fill_blank questions, which have no Choice rows.
+    text_answer = db.Column(db.String(500), nullable=True)
     is_correct = db.Column(db.Boolean, default=False, nullable=False)
 
     question = db.relationship("Question")

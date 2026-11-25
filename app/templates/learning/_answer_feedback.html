@@ -1,5 +1,7 @@
 {% if is_correct %}
   <p style="color:#0a5c44"><strong>Correct.</strong></p>
+{% elif question.question_type == 'fill_blank' %}
+  <p style="color:#b3261e"><strong>Not quite.</strong> Accepted answer(s): {{ question.accepted_answers|join(", ") if question.accepted_answers else "—" }}</p>
 {% else %}
   <p style="color:#b3261e"><strong>Not quite.</strong> The correct answer is: {{ correct_choice.text if correct_choice else "—" }}</p>
 {% endif %}

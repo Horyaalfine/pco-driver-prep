@@ -4,18 +4,37 @@
 <h1>Mock exam result — {{ module_label }}</h1>
 <div class="card">
   <p class="price">{{ attempt.score_percent }}%<span> score</span></p>
+  {% if attempt.score_percent is not none %}
+    {% if attempt.score_percent >= pass_mark %}
+      <p class="pill pill-active">Pass (pass mark {{ pass_mark }}%)</p>
+    {% else %}
+      <p class="pill pill-inactive">Below pass mark ({{ pass_mark }}%)</p>
+    {% endif %}
+  {% endif %}
   <p class="lead">{{ attempt.answers|length }} questions answered</p>
 </div>
 
 <h2>Review</h2>
 {% for a in attempt.answers %}
   <div class="question-card">
+    {% if a.question.question_type == 'reading' and a.question.passage %}
+      <p class="lead" style="font-style:italic;border-left:3px solid var(--border);padding-left:12px">{{ a.question.passage }}</p>
+    {% endif %}
     <p><strong>{{ loop.index }}. {{ a.question.prompt }}</strong></p>
-    {% if a.is_correct %}
-      <p style="color:#0a5c44">Your answer: {{ a.choice.text if a.choice else "—" }} — correct</p>
+    {% if a.question.question_type == 'fill_blank' %}
+      {% if a.is_correct %}
+        <p style="color:#0a5c44">Your answer: {{ a.text_answer or "—" }} — correct</p>
+      {% else %}
+        <p style="color:#b3261e">Your answer: {{ a.text_answer or "No answer" }} — incorrect</p>
+        <p>Accepted answer(s): {{ a.question.accepted_answers|join(", ") if a.question.accepted_answers else "—" }}</p>
+      {% endif %}
     {% else %}
-      <p style="color:#b3261e">Your answer: {{ a.choice.text if a.choice else "No answer" }} — incorrect</p>
-      <p>Correct answer: {{ a.question.correct_choice.text if a.question.correct_choice else "—" }}</p>
+      {% if a.is_correct %}
+        <p style="color:#0a5c44">Your answer: {{ a.choice.text if a.choice else "—" }} — correct</p>
+      {% else %}
+        <p style="color:#b3261e">Your answer: {{ a.choice.text if a.choice else "No answer" }} — incorrect</p>
+        <p>Correct answer: {{ a.question.correct_choice.text if a.question.correct_choice else "—" }}</p>
+      {% endif %}
     {% endif %}
     {% if a.question.explanation %}<p class="lead">{{ a.question.explanation }}</p>{% endif %}
   </div>

@@ -5,19 +5,22 @@
 <a class="btn btn-accent" href="{{ url_for('admin.new_question', module_slug=module_slug) }}">Add question</a>
 
 <table>
-  <thead><tr><th>Prompt</th><th>Topic</th><th>Status</th><th></th></tr></thead>
+  <thead><tr><th>Prompt</th><th>Topic</th><th>Type</th><th>Status</th><th></th></tr></thead>
   <tbody>
     {% for q in questions %}
       <tr>
         <td>{{ q.prompt[:80] }}{% if q.prompt|length > 80 %}…{% endif %}</td>
         <td>{{ q.topic or "—" }}</td>
+        <td>{{ {"mcq": "Multiple choice", "fill_blank": "Fill in the blank", "reading": "Reading passage"}.get(q.question_type, q.question_type) }}</td>
         <td>
           <span class="pill {{ 'pill-active' if q.is_active else 'pill-inactive' }}">
             {{ "Active" if q.is_active else "Inactive" }}
           </span>
         </td>
         <td>
-          <a class="btn btn-small btn-outline" href="{{ url_for('admin.edit_question', question_id=q.id) }}">Edit</a>
+          {% if q.question_type == 'mcq' %}
+            <a class="btn btn-small btn-outline" href="{{ url_for('admin.edit_question', question_id=q.id) }}">Edit</a>
+          {% endif %}
           <form method="post" action="{{ url_for('admin.toggle_active', question_id=q.id) }}" style="display:inline">
             <button class="btn btn-small btn-outline" type="submit">{{ "Deactivate" if q.is_active else "Activate" }}</button>
           </form>
@@ -27,7 +30,7 @@
         </td>
       </tr>
     {% else %}
-      <tr><td colspan="4">No questions yet.</td></tr>
+      <tr><td colspan="5">No questions yet.</td></tr>
     {% endfor %}
   </tbody>
 </table>

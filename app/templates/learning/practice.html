@@ -6,14 +6,21 @@
 
 {% for q in questions %}
   <div class="question-card" id="question-{{ q.id }}">
+    {% if q.question_type == 'reading' and q.passage %}
+      <p class="lead" style="font-style:italic;border-left:3px solid var(--border);padding-left:12px">{{ q.passage }}</p>
+    {% endif %}
     <p><strong>{{ loop.index }}. {{ q.prompt }}</strong></p>
-    <form class="practice-form" data-question-id="{{ q.id }}">
-      {% for c in q.choices %}
-        <label class="choice-row">
-          <input type="radio" name="choice_id" value="{{ c.id }}" required>
-          {{ c.text }}
-        </label>
-      {% endfor %}
+    <form class="practice-form" data-question-id="{{ q.id }}" data-question-type="{{ q.question_type }}">
+      {% if q.question_type == 'fill_blank' %}
+        <input type="text" name="text_answer" class="choice-row" placeholder="Type your answer" required>
+      {% else %}
+        {% for c in q.choices %}
+          <label class="choice-row">
+            <input type="radio" name="choice_id" value="{{ c.id }}" required>
+            {{ c.text }}
+          </label>
+        {% endfor %}
+      {% endif %}
       <button class="btn btn-small btn-outline" type="submit" style="margin-top:8px">Check answer</button>
     </form>
     <div class="feedback" id="feedback-{{ q.id }}"></div>
@@ -28,9 +35,17 @@ document.querySelectorAll('.practice-form').forEach(form => {
   form.addEventListener('submit', async (e) => {
     e.preventDefault();
     const questionId = form.dataset.questionId;
-    const choice = form.querySelector('input[name=choice_id]:checked');
-    if (!choice) return;
-    const body = new URLSearchParams({question_id: questionId, choice_id: choice.value});
+    const params = {question_id: questionId};
+    if (form.dataset.questionType === 'fill_blank') {
+      const input = form.querySelector('input[name=text_answer]');
+      if (!input || !input.value.trim()) return;
+      params.text_answer = input.value;
+    } else {
+      const choice = form.querySelector('input[name=choice_id]:checked');
+      if (!choice) return;
+      params.choice_id = choice.value;
+    }
+    const body = new URLSearchParams(params);
     const resp = await fetch(`/practice/${attemptId}/answer`, {method: 'POST', body});
     const html = await resp.text();
     document.getElementById(`feedback-${questionId}`).innerHTML = html;

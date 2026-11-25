@@ -148,6 +148,18 @@ def new_question(module_slug):
 @admin_required
 def edit_question(question_id):
     question = Question.query.get_or_404(question_id)
+    if question.question_type != "mcq":
+        # This form only knows how to author plain multiple-choice questions
+        # (it always requires 2+ choice fields). Fill-in-the-blank and
+        # reading-passage questions are authored in app/seed.py for now —
+        # editing one here would just dead-end on the required choice fields.
+        flash(
+            "This question type (fill-in-the-blank / reading passage) isn't editable "
+            "in the admin UI yet — update it in app/seed.py and redeploy, or deactivate "
+            "it below and add a replacement.",
+            "info",
+        )
+        return redirect(url_for("admin.module_questions", module_slug=question.module_slug))
 
     if request.method == "POST":
         _save_question_form(question.module_slug, question)

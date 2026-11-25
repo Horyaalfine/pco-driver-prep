@@ -19,8 +19,17 @@ from app.routing import score_route
 learning_bp = Blueprint("learning", __name__)
 
 MOCK_EXAM_SIZE = 30
-MOCK_EXAM_MINUTES = {"elr": 20, "seru": 25, "topographical": 25}
+MOCK_EXAM_MINUTES = {"elr": 20, "seru": 45, "topographical": 25}
 PRACTICE_BATCH_SIZE = 10
+PASS_MARK_PERCENT = 60
+
+# The real SERU paper is ~37 questions in 45 minutes: roughly 18
+# multiple-choice, 17 fill-in-the-blank/sentence-completion, and 2 reading
+# & understanding passages. Every other module still uses the generic
+# flat MOCK_EXAM_SIZE-random-questions composition below.
+EXAM_COMPOSITION = {
+    "seru": {"mcq": 18, "fill_blank": 17, "reading": 2},
+}
 
 
 def requires_access(view):
@@ -120,6 +129,20 @@ def practice(module_slug):
     )
 
 
+def _grade_answer(question, choice_id, text_answer):
+    """Shared grading for both mcq/reading (choice-based) and fill_blank
+    (text-based) questions. Returns (choice_or_None, is_correct)."""
+    if question.question_type == "fill_blank":
+        is_correct = question.grade_text_answer(text_answer)
+        return None, is_correct
+    choice = None
+    is_correct = False
+    if choice_id:
+        choice = next((c for c in question.choices if c.id == int(choice_id)), None)
+        is_correct = bool(choice and choice.is_correct)
+    return choice, is_correct
+
+
 @learning_bp.route("/practice/<int:attempt_id>/answer", methods=["POST"])
 @requires_access
 def practice_answer(attempt_id):
@@ -128,19 +151,17 @@ def practice_answer(attempt_id):
         abort(403)
 
     question_id = int(request.form["question_id"])
-    choice_id = request.form.get("choice_id")
     question = Question.query.get_or_404(question_id)
-    choice = None
-    is_correct = False
-    if choice_id:
-        choice = next((c for c in question.choices if c.id == int(choice_id)), None)
-        is_correct = bool(choice and choice.is_correct)
+    choice, is_correct = _grade_answer(
+        question, request.form.get("choice_id"), request.form.get("text_answer")
+    )
 
     db.session.add(
         AttemptAnswer(
             attempt_id=attempt.id,
             question_id=question.id,
             choice_id=choice.id if choice else None,
+            text_answer=request.form.get("text_answer") if question.question_type == "fill_blank" else None,
             is_correct=is_correct,
         )
     )
@@ -160,17 +181,38 @@ def practice_answer(attempt_id):
 # closely as a question bank can.
 # ---------------------------------------------------------------------------
 
+def _choose_mock_exam_questions(module_slug):
+    """Picks the question set for a mock exam. SERU mirrors the real paper's
+    composition (mcq/fill_blank/reading counts); every other module just
+    takes MOCK_EXAM_SIZE random active questions, as before."""
+    composition = EXAM_COMPOSITION.get(module_slug)
+    if not composition:
+        questions = Question.query.filter_by(module_slug=module_slug, is_active=True).all()
+        random.shuffle(questions)
+        return questions[:MOCK_EXAM_SIZE]
+
+    chosen = []
+    for q_type, count in composition.items():
+        pool = Question.query.filter_by(
+            module_slug=module_slug, is_active=True, question_type=q_type
+        ).all()
+        random.shuffle(pool)
+        # Take as many as are available, up to the real exam's count for that
+        # type — lets the exam still run (at a reduced size) while the bank
+        # for a given type is still being built out, rather than blocking.
+        chosen.extend(pool[: min(count, len(pool))])
+    random.shuffle(chosen)
+    return chosen
+
+
 @learning_bp.route("/module/<module_slug>/mock-exam/start", methods=["POST"])
 @requires_access
 def start_mock_exam(module_slug):
     module_slug = _valid_module_or_404(module_slug)
-    questions = Question.query.filter_by(module_slug=module_slug, is_active=True).all()
-    if len(questions) < 5:
+    chosen = _choose_mock_exam_questions(module_slug)
+    if len(chosen) < 5:
         flash("Not enough questions loaded for a mock exam yet.", "info")
         return redirect(url_for("learning.module_home", module_slug=module_slug))
-
-    random.shuffle(questions)
-    chosen = questions[:MOCK_EXAM_SIZE]
 
     attempt = Attempt(user_id=current_user.id, module_slug=module_slug, is_mock_exam=True)
     db.session.add(attempt)
@@ -208,6 +250,7 @@ def mock_exam(attempt_id):
         attempt=attempt,
         questions=ordered,
         minutes=minutes,
+        pass_mark=PASS_MARK_PERCENT,
     )
 
 
@@ -225,17 +268,16 @@ def submit_mock_exam(attempt_id):
         question = Question.query.get(question_id)
         if not question:
             continue
-        choice_id = request.form.get(f"q_{question_id}")
-        choice = None
-        is_correct = False
-        if choice_id:
-            choice = next((c for c in question.choices if c.id == int(choice_id)), None)
-            is_correct = bool(choice and choice.is_correct)
+        text_answer = request.form.get(f"q_{question_id}_text")
+        choice, is_correct = _grade_answer(
+            question, request.form.get(f"q_{question_id}"), text_answer
+        )
         db.session.add(
             AttemptAnswer(
                 attempt_id=attempt.id,
                 question_id=question.id,
                 choice_id=choice.id if choice else None,
+                text_answer=text_answer if question.question_type == "fill_blank" else None,
                 is_correct=is_correct,
             )
         )
@@ -255,6 +297,7 @@ def mock_exam_result(attempt_id):
         "learning/mock_exam_result.html",
         module_label=MODULE_LABELS[attempt.module_slug],
         attempt=attempt,
+        pass_mark=PASS_MARK_PERCENT,
     )
 
 

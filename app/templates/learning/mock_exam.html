@@ -2,18 +2,25 @@
 {% block title %}Mock exam — {{ module_label }}{% endblock %}
 {% block content %}
 <h1>Mock exam — {{ module_label }}</h1>
-<p>Time remaining: <span class="timer" id="timer">{{ minutes }}:00</span></p>
+<p>{{ questions|length }} questions &middot; pass mark {{ pass_mark }}% &middot; Time remaining: <span class="timer" id="timer">{{ minutes }}:00</span></p>
 
 <form method="post" action="{{ url_for('learning.submit_mock_exam', attempt_id=attempt.id) }}" id="exam-form">
   {% for q in questions %}
     <div class="question-card">
+      {% if q.question_type == 'reading' and q.passage %}
+        <p class="lead" style="font-style:italic;border-left:3px solid var(--border);padding-left:12px">{{ q.passage }}</p>
+      {% endif %}
       <p><strong>{{ loop.index }}. {{ q.prompt }}</strong></p>
-      {% for c in q.choices %}
-        <label class="choice-row">
-          <input type="radio" name="q_{{ q.id }}" value="{{ c.id }}">
-          {{ c.text }}
-        </label>
-      {% endfor %}
+      {% if q.question_type == 'fill_blank' %}
+        <input type="text" name="q_{{ q.id }}_text" class="choice-row" placeholder="Type your answer">
+      {% else %}
+        {% for c in q.choices %}
+          <label class="choice-row">
+            <input type="radio" name="q_{{ q.id }}" value="{{ c.id }}">
+            {{ c.text }}
+          </label>
+        {% endfor %}
+      {% endif %}
     </div>
   {% endfor %}
   <button class="btn btn-accent" type="submit">Submit exam</button>
