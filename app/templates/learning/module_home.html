@@ -26,4 +26,12 @@
     <button class="btn btn-accent" type="submit">Start mock exam</button>
   </form>
 </div>
+
+{% if module_slug == 'topographical' %}
+<div class="card">
+  <h2 style="margin-top:0">Route planning</h2>
+  <p class="lead">The real topographical assessment weights its route-planning questions at 75% of the total score — far more than the multiple-choice questions above. Practise planning a legal, direct route on an interactive map.</p>
+  <a class="btn btn-accent" href="{{ url_for('learning.route_planning_list') }}">Practise route planning</a>
+</div>
+{% endif %}
 {% endblock %}

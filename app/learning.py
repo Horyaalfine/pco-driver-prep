@@ -5,7 +5,16 @@ from flask import Blueprint, render_template, redirect, url_for, flash, request,
 from flask_login import login_required, current_user
 
 from app.extensions import db
-from app.models import Question, Attempt, AttemptAnswer, MODULE_SLUGS, MODULE_LABELS
+from app.models import (
+    Question,
+    Attempt,
+    AttemptAnswer,
+    RouteScenario,
+    RouteAttempt,
+    MODULE_SLUGS,
+    MODULE_LABELS,
+)
+from app.routing import score_route
 
 learning_bp = Blueprint("learning", __name__)
 
@@ -247,3 +256,75 @@ def mock_exam_result(attempt_id):
         module_label=MODULE_LABELS[attempt.module_slug],
         attempt=attempt,
     )
+
+
+# ---------------------------------------------------------------------------
+# Topographical route-planning exercises. The real assessment weights its 4
+# route-planning questions at 75% of the total score, so this gets its own
+# exercise type (interactive map, not multiple-choice) rather than living in
+# the Question/Choice tables above. See app/models.py and app/routing.py.
+# ---------------------------------------------------------------------------
+
+@learning_bp.route("/module/topographical/route-planning")
+@requires_access
+def route_planning_list():
+    scenarios = (
+        RouteScenario.query.filter_by(module_slug="topographical", is_active=True)
+        .order_by(RouteScenario.id)
+        .all()
+    )
+    best_scores = {}
+    for scenario in scenarios:
+        best = (
+            RouteAttempt.query.filter_by(user_id=current_user.id, scenario_id=scenario.id)
+            .order_by(RouteAttempt.score_percent.desc())
+            .first()
+        )
+        best_scores[scenario.id] = best.score_percent if best else None
+    return render_template(
+        "learning/route_planning_list.html",
+        module_label=MODULE_LABELS["topographical"],
+        scenarios=scenarios,
+        best_scores=best_scores,
+    )
+
+
+@learning_bp.route("/module/topographical/route-planning/<int:scenario_id>")
+@requires_access
+def route_scenario(scenario_id):
+    scenario = RouteScenario.query.get_or_404(scenario_id)
+    route_map = scenario.route_map
+    return render_template(
+        "learning/route_scenario.html",
+        module_label=MODULE_LABELS["topographical"],
+        scenario=scenario,
+        route_map=route_map,
+    )
+
+
+@learning_bp.route("/module/topographical/route-planning/<int:scenario_id>/submit", methods=["POST"])
+@requires_access
+def route_scenario_submit(scenario_id):
+    scenario = RouteScenario.query.get_or_404(scenario_id)
+    route_map = scenario.route_map
+
+    payload = request.get_json(silent=True) or {}
+    submitted_path = payload.get("path")
+    if not isinstance(submitted_path, list) or not all(isinstance(n, str) for n in submitted_path):
+        return {"error": "Invalid path."}, 400
+
+    result = score_route(route_map.data, scenario.start_node, scenario.end_node, submitted_path)
+
+    db.session.add(
+        RouteAttempt(
+            user_id=current_user.id,
+            scenario_id=scenario.id,
+            submitted_path=submitted_path,
+            is_legal=result["is_legal"],
+            is_optimal=result["is_optimal"],
+            score_percent=result["score_percent"],
+        )
+    )
+    db.session.commit()
+
+    return result, 200

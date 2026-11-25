@@ -1,0 +1,23 @@
+{% extends "base.html" %}
+{% block title %}Route planning — {{ module_label }} — {{ app_name }}{% endblock %}
+{% block content %}
+<h1>Route planning</h1>
+<p class="lead">Each scenario shows a schematic map with a start and end point. Click through connected streets to build your route, watching the direction of one-way streets, then submit to see if it's legal and whether it's the most direct option.</p>
+
+<div class="card-grid">
+  {% for scenario in scenarios %}
+  <div class="card">
+    <p>{{ scenario.prompt }}</p>
+    {% set best = best_scores[scenario.id] %}
+    {% if best is not none %}
+      <p class="lead">Best score: {{ best }}%</p>
+    {% else %}
+      <p class="lead">Not attempted yet</p>
+    {% endif %}
+    <a class="btn btn-outline" href="{{ url_for('learning.route_scenario', scenario_id=scenario.id) }}">
+      {% if best is not none %}Try again{% else %}Start{% endif %}
+    </a>
+  </div>
+  {% endfor %}
+</div>
+{% endblock %}

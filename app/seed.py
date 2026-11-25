@@ -14,7 +14,8 @@ or any other source — see the project's research doc for the regulatory
 facts these are based on.
 """
 from app.extensions import db
-from app.models import Question, Choice, User
+from app.models import Question, Choice, User, RouteMap, RouteScenario
+from app.route_maps_data import ROUTE_MAPS
 
 SEED_QUESTIONS = {
     "elr": [
@@ -612,6 +613,34 @@ def run_seed():
             added += 1
         summary.append(f"{module_slug}: {added} new question(s) added")
     db.session.commit()
+
+    maps_added, scenarios_added = 0, 0
+    for map_item in ROUTE_MAPS:
+        route_map = RouteMap.query.filter_by(slug=map_item["slug"]).first()
+        if not route_map:
+            route_map = RouteMap(slug=map_item["slug"], name=map_item["name"], data=map_item["data"])
+            db.session.add(route_map)
+            db.session.flush()  # need route_map.id for the scenarios below
+            maps_added += 1
+        for sc in map_item["scenarios"]:
+            existing = RouteScenario.query.filter_by(
+                map_id=route_map.id, start_node=sc["start"], end_node=sc["end"]
+            ).first()
+            if existing:
+                continue
+            db.session.add(
+                RouteScenario(
+                    map_id=route_map.id,
+                    module_slug="topographical",
+                    topic="Route planning",
+                    start_node=sc["start"],
+                    end_node=sc["end"],
+                    prompt=sc["prompt"],
+                )
+            )
+            scenarios_added += 1
+    db.session.commit()
+    summary.append(f"route maps: {maps_added} new map(s), {scenarios_added} new scenario(s) added")
 
     admin_email = "admin@example.com"
     admin_created = False

@@ -155,3 +155,67 @@ class AttemptAnswer(db.Model):
 
     question = db.relationship("Question")
     choice = db.relationship("Choice")
+
+
+# ---------------------------------------------------------------------------
+# Topographical route-planning exercises. The real TfL topographical
+# assessment weights its 4 route-planning questions at 75% of the total
+# score (the multiple-choice questions above are only 25%), so this is a
+# separate, purpose-built exercise type rather than another Question row:
+# the student is shown a schematic map and has to build a legal route
+# themselves, rather than pick from 4 pre-written options.
+#
+# Maps are entirely original/fictional layouts (not real London streets or
+# any licensed map data) built to practise the underlying skill — reading
+# one-way restrictions and planning the most direct legal route — without
+# any copyright or factual-currency risk from depicting real junctions.
+# ---------------------------------------------------------------------------
+
+class RouteMap(db.Model):
+    __tablename__ = "route_maps"
+
+    id = db.Column(db.Integer, primary_key=True)
+    slug = db.Column(db.String(64), unique=True, nullable=False)
+    name = db.Column(db.String(255), nullable=False)
+    # {"nodes": {"A": {"label": str, "x": int, "y": int}, ...},
+    #  "edges": [{"from": "A", "to": "B", "name": str,
+    #             "oneway": null|"forward"|"reverse", "weight": number}, ...]}
+    # oneway "forward" means only from->to is legal; "reverse" means only
+    # to->from is legal; null/absent means the street is two-way.
+    data = db.Column(db.JSON, nullable=False)
+
+    scenarios = db.relationship(
+        "RouteScenario", backref="route_map", cascade="all, delete-orphan"
+    )
+
+
+class RouteScenario(db.Model):
+    __tablename__ = "route_scenarios"
+
+    id = db.Column(db.Integer, primary_key=True)
+    map_id = db.Column(db.Integer, db.ForeignKey("route_maps.id"), nullable=False)
+    module_slug = db.Column(db.String(32), nullable=False, default="topographical", index=True)
+    topic = db.Column(db.String(120))
+    start_node = db.Column(db.String(32), nullable=False)
+    end_node = db.Column(db.String(32), nullable=False)
+    prompt = db.Column(db.Text, nullable=False)
+    is_active = db.Column(db.Boolean, default=True, nullable=False)
+
+    attempts = db.relationship(
+        "RouteAttempt", backref="scenario", cascade="all, delete-orphan"
+    )
+
+
+class RouteAttempt(db.Model):
+    __tablename__ = "route_attempts"
+
+    id = db.Column(db.Integer, primary_key=True)
+    user_id = db.Column(db.Integer, db.ForeignKey("users.id"), nullable=False)
+    scenario_id = db.Column(db.Integer, db.ForeignKey("route_scenarios.id"), nullable=False)
+    submitted_path = db.Column(db.JSON, nullable=False)  # list of node ids, in order
+    is_legal = db.Column(db.Boolean, nullable=False)
+    is_optimal = db.Column(db.Boolean, nullable=False)
+    score_percent = db.Column(db.Float, nullable=False)
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+
+    user = db.relationship("User")

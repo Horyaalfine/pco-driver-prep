@@ -1,0 +1,255 @@
+{% extends "base.html" %}
+{% block title %}Route planning — {{ module_label }} — {{ app_name }}{% endblock %}
+{% block content %}
+<a href="{{ url_for('learning.route_planning_list') }}">&larr; Back to route planning</a>
+<h1 style="margin-top:8px">Route planning</h1>
+<p class="lead">{{ scenario.prompt }}</p>
+
+<div class="route-layout">
+  <div>
+    <svg id="topo-map" class="topo-map" viewBox="0 0 600 420" xmlns="http://www.w3.org/2000/svg"></svg>
+  </div>
+  <div class="route-panel card">
+    <h3 style="margin-top:0">Your route</h3>
+    <p style="font-size:0.85rem;color:var(--muted)">Click a highlighted junction to extend your route along a connected street. Watch arrows — they show the only legal direction on one-way streets.</p>
+    <ol id="route-steps" class="route-steps"></ol>
+    <div class="stack" style="display:flex;gap:8px;flex-wrap:wrap;margin-top:12px">
+      <button id="btn-undo" class="btn btn-outline btn-small" type="button">Undo</button>
+      <button id="btn-reset" class="btn btn-outline btn-small" type="button">Reset</button>
+      <button id="btn-submit" class="btn btn-accent btn-small" type="button" disabled>Submit route</button>
+    </div>
+    <div id="route-result"></div>
+  </div>
+</div>
+
+<script>
+const MAP_DATA = {{ route_map.data | tojson }};
+const START_NODE = {{ scenario.start_node | tojson }};
+const END_NODE = {{ scenario.end_node | tojson }};
+const SUBMIT_URL = {{ url_for('learning.route_scenario_submit', scenario_id=scenario.id) | tojson }};
+
+(function () {
+  const svg = document.getElementById("topo-map");
+  const stepsEl = document.getElementById("route-steps");
+  const resultEl = document.getElementById("route-result");
+  const btnUndo = document.getElementById("btn-undo");
+  const btnReset = document.getElementById("btn-reset");
+  const btnSubmit = document.getElementById("btn-submit");
+
+  // Build a directed adjacency list client-side, mirroring app/routing.py,
+  // purely to drive which junctions are clickable. The server re-validates
+  // everything on submit — this is for UI feedback only.
+  function buildAdjacency(mapData) {
+    const adjacency = {};
+    Object.keys(mapData.nodes).forEach((id) => { adjacency[id] = []; });
+    mapData.edges.forEach((edge) => {
+      const { from, to, oneway } = edge;
+      if (oneway === "reverse") {
+        adjacency[to].push({ to: from, edge });
+      } else if (oneway === "forward") {
+        adjacency[from].push({ to: to, edge });
+      } else {
+        adjacency[from].push({ to: to, edge });
+        adjacency[to].push({ to: from, edge });
+      }
+    });
+    return adjacency;
+  }
+
+  const adjacency = buildAdjacency(MAP_DATA);
+  let path = [START_NODE];
+  let submitted = false;
+
+  function edgeBetween(a, b) {
+    const options = adjacency[a] || [];
+    const found = options.find((o) => o.to === b);
+    return found ? found.edge : null;
+  }
+
+  function edgeKey(edge) {
+    return edge.from + "->" + edge.to;
+  }
+
+  // --- Render the static map once ---
+  const NS = "http://www.w3.org/2000/svg";
+  const edgeLineEls = {}; // edgeKey -> <line>
+  MAP_DATA.edges.forEach((edge) => {
+    const a = MAP_DATA.nodes[edge.from];
+    const b = MAP_DATA.nodes[edge.to];
+    const line = document.createElementNS(NS, "line");
+    line.setAttribute("x1", a.x); line.setAttribute("y1", a.y);
+    line.setAttribute("x2", b.x); line.setAttribute("y2", b.y);
+    line.classList.add("edge-line");
+    svg.appendChild(line);
+    edgeLineEls[edgeKey(edge)] = line;
+
+    const midX = (a.x + b.x) / 2, midY = (a.y + b.y) / 2;
+    const label = document.createElementNS(NS, "text");
+    label.setAttribute("x", midX); label.setAttribute("y", midY - 4);
+    label.setAttribute("text-anchor", "middle");
+    label.classList.add("edge-label");
+    label.textContent = edge.name || "";
+    svg.appendChild(label);
+
+    if (edge.oneway === "forward" || edge.oneway === "reverse") {
+      const from = edge.oneway === "forward" ? a : b;
+      const to = edge.oneway === "forward" ? b : a;
+      const angle = Math.atan2(to.y - from.y, to.x - from.x);
+      const arrowX = from.x + (to.x - from.x) * 0.6;
+      const arrowY = from.y + (to.y - from.y) * 0.6;
+      const arrow = document.createElementNS(NS, "polygon");
+      const size = 7;
+      const p1 = [arrowX + size * Math.cos(angle), arrowY + size * Math.sin(angle)];
+      const p2 = [arrowX + size * Math.cos(angle + 2.5), arrowY + size * Math.sin(angle + 2.5)];
+      const p3 = [arrowX + size * Math.cos(angle - 2.5), arrowY + size * Math.sin(angle - 2.5)];
+      arrow.setAttribute("points", [p1, p2, p3].map((p) => p.join(",")).join(" "));
+      arrow.setAttribute("fill", "#8b949a");
+      svg.appendChild(arrow);
+    }
+  });
+
+  const nodeCircleEls = {};
+  Object.entries(MAP_DATA.nodes).forEach(([id, node]) => {
+    const circle = document.createElementNS(NS, "circle");
+    circle.setAttribute("cx", node.x); circle.setAttribute("cy", node.y);
+    circle.setAttribute("r", 10);
+    circle.classList.add("node-circle");
+    circle.addEventListener("click", () => onNodeClick(id));
+    svg.appendChild(circle);
+    nodeCircleEls[id] = circle;
+
+    const label = document.createElementNS(NS, "text");
+    label.setAttribute("x", node.x); label.setAttribute("y", node.y - 16);
+    label.setAttribute("text-anchor", "middle");
+    label.classList.add("node-label");
+    label.textContent = node.label;
+    svg.appendChild(label);
+  });
+
+  function onNodeClick(nodeId) {
+    if (submitted) return;
+    const last = path[path.length - 1];
+    if (nodeId === last) return;
+    const edge = edgeBetween(last, nodeId);
+    if (!edge) return; // not a legal next step from here — ignore the click
+    path.push(nodeId);
+    render();
+  }
+
+  function render() {
+    // Reset visuals
+    Object.values(edgeLineEls).forEach((el) => el.classList.remove("edge-selected", "edge-optimal", "edge-clickable"));
+    Object.entries(nodeCircleEls).forEach(([id, el]) => {
+      el.classList.remove("node-selected", "node-current", "node-reachable");
+    });
+
+    // Mark start/end always
+    nodeCircleEls[START_NODE].classList.add("node-start");
+    nodeCircleEls[END_NODE].classList.add("node-end");
+
+    // Selected path
+    for (let i = 0; i < path.length; i++) {
+      nodeCircleEls[path[i]].classList.add("node-selected");
+      if (i < path.length - 1) {
+        const edge = edgeBetween(path[i], path[i + 1]);
+        if (edge) edgeLineEls[edgeKey(edge)].classList.add("edge-selected");
+      }
+    }
+    const current = path[path.length - 1];
+    nodeCircleEls[current].classList.add("node-current");
+
+    // Reachable next steps
+    if (!submitted) {
+      (adjacency[current] || []).forEach((opt) => {
+        nodeCircleEls[opt.to].classList.add("node-reachable");
+      });
+    }
+
+    // Steps list
+    stepsEl.innerHTML = "";
+    for (let i = 0; i < path.length - 1; i++) {
+      const edge = edgeBetween(path[i], path[i + 1]);
+      const li = document.createElement("li");
+      li.textContent = (edge ? edge.name : "") + " — " + MAP_DATA.nodes[path[i + 1]].label;
+      stepsEl.appendChild(li);
+    }
+    if (path.length === 1) {
+      const li = document.createElement("li");
+      li.textContent = "Start: " + MAP_DATA.nodes[path[0]].label;
+      stepsEl.appendChild(li);
+    }
+
+    btnUndo.disabled = path.length <= 1 || submitted;
+    btnReset.disabled = submitted;
+    btnSubmit.disabled = submitted || path.length < 2 || current !== END_NODE;
+  }
+
+  btnUndo.addEventListener("click", () => {
+    if (path.length > 1) { path.pop(); render(); }
+  });
+  btnReset.addEventListener("click", () => {
+    path = [START_NODE]; resultEl.innerHTML = ""; render();
+  });
+  btnSubmit.addEventListener("click", async () => {
+    btnSubmit.disabled = true;
+    try {
+      const res = await fetch(SUBMIT_URL, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ path }),
+      });
+      const result = await res.json();
+      submitted = true;
+      showResult(result);
+    } catch (e) {
+      resultEl.innerHTML = '<div class="route-result result-bad">Something went wrong submitting your route — please try again.</div>';
+      btnSubmit.disabled = false;
+      submitted = false;
+    }
+  });
+
+  function showResult(result) {
+    const cls = result.is_optimal ? "result-good" : (result.is_legal ? "result-partial" : "result-bad");
+    resultEl.innerHTML =
+      '<div class="route-result ' + cls + '">' +
+      '<strong>' + Math.round(result.score_percent) + '% — ' + (result.is_optimal ? "Correct!" : result.is_legal ? "Legal, not optimal" : "Not a legal route") + '</strong>' +
+      '<p style="margin:6px 0 0">' + result.message + '</p>' +
+      '</div>';
+
+    // Overlay the optimal path for comparison/learning
+    if (result.optimal_path && result.optimal_path.length > 1) {
+      for (let i = 0; i < result.optimal_path.length - 1; i++) {
+        const edge = edgeBetween(result.optimal_path[i], result.optimal_path[i + 1]);
+        if (edge) edgeLineEls[edgeKey(edge)].classList.add("edge-optimal");
+      }
+      if (!result.is_optimal) {
+        const names = [];
+        for (let i = 0; i < result.optimal_path.length - 1; i++) {
+          const edge = edgeBetween(result.optimal_path[i], result.optimal_path[i + 1]);
+          if (edge) names.push(edge.name);
+        }
+        const p = document.createElement("p");
+        p.style.fontSize = "0.85rem";
+        p.style.marginTop = "8px";
+        p.innerHTML = "A most direct legal route (shown dashed on the map): " + names.join(" &rarr; ");
+        resultEl.appendChild(p);
+      }
+    }
+
+    const again = document.createElement("a");
+    again.href = "#";
+    again.className = "btn btn-outline btn-small";
+    again.style.marginTop = "10px";
+    again.style.display = "inline-block";
+    again.textContent = "Try again";
+    again.addEventListener("click", (e) => {
+      e.preventDefault();
+      window.location.reload();
+    });
+    resultEl.appendChild(again);
+  }
+
+  render();
+})();
+</script>
+{% endblock %}
