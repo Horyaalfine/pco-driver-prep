@@ -6,9 +6,102 @@
 <h1 style="margin-top:8px">{{ prompt.prompt_text }}</h1>
 
 <div class="card">
-  <h2 style="margin-top:0">Now try it yourself</h2>
-  <p class="lead">Before reading on, say your own answer out loud — ideally timed, as you would in the real interview. Then compare it to the model answer and tips below.</p>
+  <h2 style="margin-top:0">Record yourself, then listen back</h2>
+  <p class="lead">Say your own answer out loud — ideally timed, as you would in the real interview — then play it back before reading the model answer below. Hearing your own fluency and pace is far more useful than reading tips alone.</p>
+  <p class="lead" style="font-size:0.9em;opacity:0.8">Your recording stays only in this browser tab and is never uploaded or saved anywhere — it disappears as soon as you leave or refresh this page.</p>
+
+  <div id="recorder-unsupported" style="display:none">
+    <p class="lead">In-browser recording isn't available here (your browser may not support it, or microphone access was denied). You can still rehearse out loud without recording.</p>
+  </div>
+
+  <div id="recorder-ui">
+    <button class="btn btn-accent" id="record-btn" type="button">Start recording</button>
+    <span id="record-status" style="margin-left:12px;opacity:0.8"></span>
+    <div id="playback-area" style="margin-top:12px;display:none">
+      <audio id="playback-audio" controls style="width:100%;max-width:420px"></audio>
+      <div style="margin-top:8px">
+        <button class="btn btn-small btn-outline" id="record-again-btn" type="button">Record again</button>
+      </div>
+    </div>
+  </div>
 </div>
+
+<script>
+(function () {
+  const recordBtn = document.getElementById('record-btn');
+  const recordAgainBtn = document.getElementById('record-again-btn');
+  const statusEl = document.getElementById('record-status');
+  const playbackArea = document.getElementById('playback-area');
+  const playbackAudio = document.getElementById('playback-audio');
+  const recorderUi = document.getElementById('recorder-ui');
+  const unsupportedEl = document.getElementById('recorder-unsupported');
+
+  if (!navigator.mediaDevices || !window.MediaRecorder) {
+    recorderUi.style.display = 'none';
+    unsupportedEl.style.display = 'block';
+    return;
+  }
+
+  let mediaRecorder = null;
+  let chunks = [];
+  let seconds = 0;
+  let timerHandle = null;
+  let currentStream = null;
+
+  function formatTime(s) {
+    const m = Math.floor(s / 60);
+    const sec = s % 60;
+    return `${m}:${sec.toString().padStart(2, '0')}`;
+  }
+
+  function stopStream() {
+    if (currentStream) {
+      currentStream.getTracks().forEach(t => t.stop());
+      currentStream = null;
+    }
+  }
+
+  recordBtn.addEventListener('click', async () => {
+    if (mediaRecorder && mediaRecorder.state === 'recording') {
+      mediaRecorder.stop();
+      return;
+    }
+    try {
+      currentStream = await navigator.mediaDevices.getUserMedia({ audio: true });
+    } catch (err) {
+      unsupportedEl.style.display = 'block';
+      unsupportedEl.querySelector('p').textContent = 'Microphone access was denied or is unavailable — you can still rehearse out loud without recording.';
+      return;
+    }
+    chunks = [];
+    seconds = 0;
+    mediaRecorder = new MediaRecorder(currentStream);
+    mediaRecorder.addEventListener('dataavailable', (e) => { if (e.data.size > 0) chunks.push(e.data); });
+    mediaRecorder.addEventListener('stop', () => {
+      clearInterval(timerHandle);
+      stopStream();
+      const blob = new Blob(chunks, { type: 'audio/webm' });
+      playbackAudio.src = URL.createObjectURL(blob);
+      playbackArea.style.display = 'block';
+      recordBtn.textContent = 'Start recording';
+      statusEl.textContent = '';
+    });
+    mediaRecorder.start();
+    recordBtn.textContent = 'Stop recording';
+    playbackArea.style.display = 'none';
+    statusEl.textContent = formatTime(0);
+    timerHandle = setInterval(() => {
+      seconds += 1;
+      statusEl.textContent = formatTime(seconds);
+    }, 1000);
+  });
+
+  recordAgainBtn.addEventListener('click', () => {
+    playbackArea.style.display = 'none';
+    playbackAudio.removeAttribute('src');
+  });
+})();
+</script>
 
 <div class="card">
   <h2 style="margin-top:0">Model answer</h2>
