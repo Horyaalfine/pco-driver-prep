@@ -169,4 +169,57 @@ ROUTE_MAPS = [
             },
         ],
     },
+    {
+        "slug": "training-map-4",
+        "name": "Training Map 4",
+        "data": {
+            "nodes": {
+                "L1": {"label": "North Yard", "x": 60, "y": 40},
+                "L2": {"label": "Five Ways", "x": 220, "y": 40},
+                "L3": {"label": "Eastfield", "x": 380, "y": 40},
+                "L4": {"label": "Lockside", "x": 60, "y": 160},
+                "L5": {"label": "Exchange Hall", "x": 220, "y": 160},
+                "L6": {"label": "Dock Junction", "x": 380, "y": 160},
+                "L7": {"label": "South Point", "x": 60, "y": 280},
+                "L8": {"label": "Fountain Square", "x": 220, "y": 280},
+                "L9": {"label": "Harbour Gate", "x": 380, "y": 280},
+                "L10": {"label": "Outer Junction", "x": 500, "y": 160},
+            },
+            "edges": [
+                {"from": "L1", "to": "L2", "name": "Yard Road"},
+                {"from": "L2", "to": "L3", "name": "Five Ways Lane"},
+                {"from": "L1", "to": "L4", "name": "Lockside Street"},
+                {"from": "L2", "to": "L5", "name": "Exchange Approach", "oneway": "forward"},
+                {"from": "L3", "to": "L6", "name": "Dock Road"},
+                {"from": "L4", "to": "L5", "name": "Lock Lane"},
+                {"from": "L5", "to": "L6", "name": "Exchange Street", "oneway": "forward"},
+                {"from": "L4", "to": "L7", "name": "South Lock Road"},
+                {"from": "L5", "to": "L8", "name": "Fountain Lane"},
+                {"from": "L6", "to": "L9", "name": "Harbour Road"},
+                {"from": "L6", "to": "L10", "name": "Outer Link"},
+                {"from": "L7", "to": "L8", "name": "Point Row", "oneway": "forward"},
+                {"from": "L8", "to": "L9", "name": "Square Walk"},
+                {"from": "L9", "to": "L10", "name": "Outer Approach"},
+                {"from": "L3", "to": "L10", "name": "Outer Bypass"},
+            ],
+        },
+        "scenarios": [
+            {
+                "start": "L10", "end": "L1",
+                "prompt": "Plan the most direct legal route from Outer Junction to North Yard.",
+            },
+            {
+                "start": "L1", "end": "L9",
+                "prompt": "Plan the most direct legal route from North Yard to Harbour Gate.",
+            },
+            {
+                "start": "L7", "end": "L2",
+                "prompt": "Plan the most direct legal route from South Point to Five Ways. Watch the direction of the one-way streets.",
+            },
+            {
+                "start": "L3", "end": "L7",
+                "prompt": "Plan the most direct legal route from Eastfield to South Point. Two different one-way streets block the obvious-looking short cuts — look carefully at their direction.",
+            },
+        ],
+    },
 ]

@@ -277,6 +277,96 @@ SEED_QUESTIONS = {
             ],
             "explanation": "The note explicitly asks the driver to adjust the pickup time to match the new landing time, rather than keeping the original schedule.",
         },
+
+        # --- Additional reading/writing/vocabulary/listening (content-depth expansion) ---
+        {
+            "topic": "Listening and responding",
+            "prompt": "A passenger on the phone says: 'I'm not fussed which way you go, whatever's quickest for you.' What does this mean?",
+            "choices": [
+                ("The passenger wants the scenic route", False),
+                ("The passenger is leaving the route choice up to the driver, as long as it's quick", True),
+                ("The passenger wants to be consulted on every turn", False),
+                ("The passenger doesn't want to be picked up at all", False),
+            ],
+            "explanation": "'Not fussed' means the passenger has no strong preference, and they're explicitly handing the route decision to the driver, prioritising speed.",
+        },
+        {
+            "topic": "Listening and responding",
+            "prompt": "A passenger says: 'Sorry, could you say that again? I didn't quite catch the address.' What should the driver do?",
+            "choices": [
+                ("Continue the conversation without repeating anything", False),
+                ("Repeat the address clearly, perhaps more slowly", True),
+                ("Assume the passenger heard correctly and move on", False),
+                ("End the call", False),
+            ],
+            "explanation": "The passenger has directly asked for the information to be repeated — the appropriate response is to repeat it clearly.",
+        },
+        {
+            "topic": "Listening and responding",
+            "prompt": "On a call, a passenger says: 'Hang on a sec, let me just check with my partner.' What should the driver understand?",
+            "choices": [
+                ("The passenger is ending the call for good", False),
+                ("The passenger needs a brief pause before continuing the conversation", True),
+                ("The passenger wants the driver to call back later", False),
+                ("The booking has been cancelled", False),
+            ],
+            "explanation": "'Hang on a sec' is a common way of asking for a short pause, not ending the conversation — the driver should simply wait briefly.",
+        },
+        {
+            "topic": "Vocabulary",
+            "prompt": "If a passenger describes a street as 'congested', they mean it is:",
+            "choices": [
+                ("Closed completely", False),
+                ("Very busy with traffic", True),
+                ("Under construction", False),
+                ("One-way only", False),
+            ],
+            "explanation": "'Congested' describes heavy traffic, not closure, construction or one-way status specifically.",
+        },
+        {
+            "topic": "Vocabulary",
+            "prompt": "A passenger asks the driver to 'hang back' from the car in front. What do they mean?",
+            "choices": [
+                ("Drive closer to the car in front", False),
+                ("Keep a greater distance from the car in front", True),
+                ("Overtake the car in front", False),
+                ("Stop immediately", False),
+            ],
+            "explanation": "To 'hang back' means to keep more distance or hold a position further behind, not to close the gap.",
+        },
+        {
+            "topic": "Vocabulary",
+            "prompt": "What does it mean if a passenger says their flight has been 'rerouted'?",
+            "choices": [
+                ("The flight has been cancelled entirely", False),
+                ("The flight's path or destination airport has been changed", True),
+                ("The flight has landed early", False),
+                ("The flight number has changed but nothing else", False),
+            ],
+            "explanation": "'Rerouted' means the flight's path, and sometimes its arrival airport, has changed — distinct from cancellation or simply landing early.",
+        },
+        {
+            "topic": "Writing",
+            "prompt": "Which sentence uses the correct singular possessive form?",
+            "choices": [
+                ("The driver's badge was clearly displayed.", True),
+                ("The drivers badge was clearly displayed.", False),
+                ("The driver's badge' was clearly displayed.", False),
+                ("The drivers' badge were clearly displayed.", False),
+            ],
+            "explanation": "\"The driver's badge\" correctly shows singular possession, with correct subject-verb agreement ('was').",
+        },
+        {
+            "topic": "Writing",
+            "prompt": "Which sentence is written in the correct tense to describe something that happened yesterday?",
+            "choices": [
+                ("I pick up the passenger at the station yesterday.", False),
+                ("I picked up the passenger at the station yesterday.", True),
+                ("I am picking up the passenger at the station yesterday.", False),
+                ("I will pick up the passenger at the station yesterday.", False),
+            ],
+            "explanation": "Past simple ('picked up') is correct for a completed action in the past, signalled by 'yesterday'.",
+        },
     ],
     "seru": [
         {
@@ -974,6 +1064,462 @@ SEED_QUESTIONS = {
             ],
             "explanation": "A driver is responsible for keeping their vehicle roadworthy; a tyre near the legal minimum tread should be addressed before continuing to carry passengers, not left until the next scheduled service.",
         },
+
+        # --- Further multiple-choice (second content-depth expansion) ---
+        {
+            "topic": "Safeguarding",
+            "prompt": "A passenger who is clearly intoxicated is being carefully looked after by two sober friends throughout the journey. Is this necessarily a safeguarding concern?",
+            "choices": [
+                ("Yes, intoxication alone always requires a safeguarding report", False),
+                ("Not necessarily — being cared for by others reduces risk, though the driver should stay alert to any change", True),
+                ("No, intoxicated passengers are never a safeguarding concern", False),
+                ("Yes, but only if the passenger is under 25", False),
+            ],
+            "explanation": "Context matters: a passenger being appropriately cared for by sober companions is lower risk than one alone, though drivers should still stay alert to any signs things are not as they appear.",
+        },
+        {
+            "topic": "Safeguarding",
+            "prompt": "A driver drops off a child passenger at night but no adult is visibly waiting at the address. What is the most appropriate action?",
+            "choices": [
+                ("Drop the child off immediately and drive away", False),
+                ("Wait a reasonable time to see an adult arrive, and contact the operator if no one appears, rather than leaving the child unsupervised", True),
+                ("Take the child to the nearest police station directly", False),
+                ("Leave the child with a neighbour chosen by the driver", False),
+            ],
+            "explanation": "Leaving an unaccompanied child with no visible adult present is a safeguarding risk; the driver should wait a reasonable time and escalate through the operator rather than simply driving off.",
+        },
+        {
+            "topic": "Safeguarding",
+            "prompt": "What is the main purpose of safeguarding awareness training for private hire drivers?",
+            "choices": [
+                ("To train drivers to personally investigate suspected abuse", False),
+                ("To help drivers recognise possible signs of harm or risk and know the correct way to raise a concern", True),
+                ("To qualify drivers as safeguarding officers", False),
+                ("To replace the need for a DBS check", False),
+            ],
+            "explanation": "Safeguarding awareness training builds recognition and reporting skills — it does not turn drivers into investigators or officers, and it doesn't replace other checks like DBS.",
+        },
+        {
+            "topic": "Safeguarding",
+            "prompt": "A passenger discloses a safety concern and asks the driver to keep it 'just between us.' What should the driver do?",
+            "choices": [
+                ("Promise full confidentiality to maintain the passenger's trust", False),
+                ("Avoid promising confidentiality, and still report the concern through the proper channel because safety comes first", True),
+                ("Ignore the disclosure since it was shared in confidence", False),
+                ("Tell other passengers about it later for context", False),
+            ],
+            "explanation": "Drivers should never promise total confidentiality on a safety disclosure — passenger (or third-party) safety takes priority over a request for secrecy.",
+        },
+        {
+            "topic": "Safeguarding",
+            "prompt": "Which best describes 'county lines' exploitation, as a safeguarding risk drivers should be aware of?",
+            "choices": [
+                ("A type of vehicle insurance fraud", False),
+                ("Criminal groups using children or vulnerable people, sometimes moved between areas, to transport drugs or money", True),
+                ("A licensing rule about operating across borough boundaries", False),
+                ("A traffic enforcement scheme", False),
+            ],
+            "explanation": "County lines exploitation involves criminal networks using children or vulnerable people — sometimes transported between areas — to move drugs or money, which is why unusual passenger patterns can be a safeguarding signal.",
+        },
+        {
+            "topic": "Equality",
+            "prompt": "A passenger using crutches asks for a little extra time to get into the vehicle. What should the driver do?",
+            "choices": [
+                ("Rush them politely to keep to schedule", False),
+                ("Allow the reasonable extra time needed without complaint", True),
+                ("Suggest they book a different driver next time", False),
+                ("Charge a small waiting fee for the extra time", False),
+            ],
+            "explanation": "Allowing reasonable extra time for a passenger with a mobility impairment is a basic reasonable adjustment, not something to charge for or discourage.",
+        },
+        {
+            "topic": "Equality",
+            "prompt": "A driver assumes an elderly passenger needs help with their bags without asking first. What would be a better approach?",
+            "choices": [
+                ("Continue assuming, since it's usually correct", False),
+                ("Ask the passenger directly what help, if any, they would like", True),
+                ("Avoid offering any help at all", False),
+                ("Only help if the passenger looks very frail", False),
+            ],
+            "explanation": "Asking rather than assuming respects the passenger's own judgement of what help they want, and avoids patronising or inaccurate assumptions based on age or appearance.",
+        },
+        {
+            "topic": "Equality",
+            "prompt": "Is it lawful for a driver to charge a blind passenger extra because they need help finding their destination?",
+            "choices": [
+                ("Yes, since it takes the driver more time", False),
+                ("No — charging a disabled passenger more for the same service is unlawful discrimination", True),
+                ("Yes, but only a small surcharge", False),
+                ("It depends on how long the journey takes", False),
+            ],
+            "explanation": "Charging a disabled passenger more for the same service because of their disability breaches the Equality Act 2010, regardless of the amount.",
+        },
+        {
+            "topic": "Equality",
+            "prompt": "A passenger who communicates in British Sign Language brings a friend along to interpret. What should the driver do?",
+            "choices": [
+                ("Refuse the booking since direct communication isn't possible", False),
+                ("Communicate politely via the interpreter and treat the passenger with the same respect as any other passenger", True),
+                ("Speak only to the friend and ignore the passenger", False),
+                ("Ask the passenger to cancel and rebook without the interpreter", False),
+            ],
+            "explanation": "Communicating through an interpreter the passenger has brought is a reasonable and respectful way to provide an accessible service, not grounds for refusal.",
+        },
+        {
+            "topic": "Equality",
+            "prompt": "A driver is unsure whether their vehicle can safely accommodate a passenger's mobility scooter. What is the best approach?",
+            "choices": [
+                ("Refuse the booking immediately to avoid any risk", False),
+                ("Check the scooter's size and how it can be safely secured before accepting, rather than guessing or refusing outright", True),
+                ("Accept without checking and deal with any problem on arrival", False),
+                ("Ask the passenger to leave the scooter behind", False),
+            ],
+            "explanation": "Checking practical details like size and secure stowage lets a driver make an informed decision, rather than refusing outright or accepting blind and risking an unsafe journey.",
+        },
+        {
+            "topic": "Road safety",
+            "prompt": "Why should a driver avoid lengthy hands-free phone conversations while driving, even though it's legal?",
+            "choices": [
+                ("It isn't actually a safety concern if hands stay on the wheel", False),
+                ("It still causes cognitive distraction that can reduce reaction times, even without physically holding the phone", True),
+                ("It drains the vehicle's battery too quickly", False),
+                ("It is only a concern on motorways", False),
+            ],
+            "explanation": "Even hands-free conversations draw mental attention away from driving, which is why limiting lengthy calls while driving is good practice beyond the legal minimum.",
+        },
+        {
+            "topic": "Road safety",
+            "prompt": "A dashboard warning light comes on during a journey with a passenger on board. What should the driver do?",
+            "choices": [
+                ("Ignore it until the next scheduled service", False),
+                ("Note it and get the vehicle checked as soon as it is safely possible", True),
+                ("Turn off the dashboard display so it isn't distracting", False),
+                ("Pull over immediately in the middle of the road", False),
+            ],
+            "explanation": "A warning light shouldn't be ignored, but the correct response is to note it and arrange a check as soon as safely possible — not to stop dangerously or wait for a routine service.",
+        },
+        {
+            "topic": "Road safety",
+            "prompt": "Why is it important to increase following distance in wet or icy conditions?",
+            "choices": [
+                ("It isn't necessary if the driver has good tyres", False),
+                ("Stopping distances increase significantly in poor conditions, so more space and time are needed to react safely", True),
+                ("It only matters for motorway driving", False),
+                ("It's a legal formality with no real safety benefit", False),
+            ],
+            "explanation": "Wet or icy roads substantially increase stopping distances, so a greater following distance gives the driver more time and space to stop safely if needed.",
+        },
+        {
+            "topic": "Road safety",
+            "prompt": "A driver is dazzled by oncoming headlights at night. What is the safest response?",
+            "choices": [
+                ("Close both eyes briefly until the glare passes", False),
+                ("Slow down, avoid looking directly at the lights, and focus on the left side of the road until vision recovers", True),
+                ("Flash headlights back repeatedly", False),
+                ("Speed up to get past the glare quickly", False),
+            ],
+            "explanation": "The safest response to being dazzled is to slow down, avoid staring at the lights, and use the road edge as a visual reference until normal vision returns.",
+        },
+        {
+            "topic": "Road safety",
+            "prompt": "What is a legal requirement regarding a private hire vehicle's MOT?",
+            "choices": [
+                ("MOTs are optional for private hire vehicles", False),
+                ("The vehicle must have a valid, up-to-date MOT certificate as a condition of remaining roadworthy and licensed", True),
+                ("MOTs are only required once, when the vehicle is first registered", False),
+                ("MOTs are the passenger's responsibility, not the driver's", False),
+            ],
+            "explanation": "A valid, current MOT is a licensing and roadworthiness requirement for a private hire vehicle — it isn't optional or a one-off check.",
+        },
+        {
+            "topic": "Professional conduct",
+            "prompt": "A driver disagrees with a passenger's political opinion expressed during the journey. What is the professional response?",
+            "choices": [
+                ("Argue the point to correct the passenger", False),
+                ("Remain neutral, avoid arguing, and keep the conversation respectful or change the subject", True),
+                ("Refuse to continue the journey", False),
+                ("Share strong opposing views to make a point", False),
+            ],
+            "explanation": "Professional conduct calls for neutrality on contentious personal topics like politics — staying respectful and steering the conversation elsewhere if needed, rather than arguing.",
+        },
+        {
+            "topic": "Professional conduct",
+            "prompt": "Why is it considered unprofessional for a driver to eat a meal while driving passengers?",
+            "choices": [
+                ("It isn't unprofessional, as long as the driver eats quickly", False),
+                ("It is distracting, reduces vehicle control, and reflects poorly on the standard of service", True),
+                ("It is only a problem in vehicles with cloth seats", False),
+                ("It is a matter of personal taste with no safety relevance", False),
+            ],
+            "explanation": "Eating while driving is both a distraction and safety risk, and it falls below the professional standard passengers expect during a booked journey.",
+        },
+        {
+            "topic": "Professional conduct",
+            "prompt": "Why should a driver check with passengers before playing loud music?",
+            "choices": [
+                ("It doesn't matter what passengers think as long as the driver enjoys it", False),
+                ("Passenger comfort matters, and music choice or volume can be unwelcome or distressing to some passengers", True),
+                ("Music is never appropriate in a private hire vehicle", False),
+                ("Only classical music is considered acceptable", False),
+            ],
+            "explanation": "Good customer service means being considerate of passenger comfort, including checking before imposing a music choice or volume on them.",
+        },
+        {
+            "topic": "Professional conduct",
+            "prompt": "A driver is running late for a booking because of traffic. What is the professional approach?",
+            "choices": [
+                ("Say nothing and hope the passenger doesn't notice", False),
+                ("Inform the passenger or operator as soon as possible and give a realistic updated time", True),
+                ("Cancel the booking rather than explain the delay", False),
+                ("Blame the passenger for booking at a busy time", False),
+            ],
+            "explanation": "Proactively communicating a realistic delay, as soon as it's known, is the professional and courteous response, rather than staying silent or cancelling without explanation.",
+        },
+        {
+            "topic": "Professional conduct",
+            "prompt": "Which best reflects professional conduct towards a passenger with a visible disability?",
+            "choices": [
+                ("Speaking loudly and slowly to all disabled passengers by default", False),
+                ("Asking the passenger directly, respectfully, what assistance (if any) they would like, rather than assuming", True),
+                ("Avoiding conversation with the passenger altogether", False),
+                ("Deciding on the passenger's behalf what help they need", False),
+            ],
+            "explanation": "Respectful professional conduct means asking rather than assuming — treating the passenger as the best judge of what, if any, assistance they need.",
+        },
+        {
+            "topic": "Licensing",
+            "prompt": "What could happen if a private hire driver allows someone else to use their vehicle for private hire work under the driver's own licence?",
+            "choices": [
+                ("Nothing, as long as the other person is also a competent driver", False),
+                ("It would be a serious licensing breach, since a licence is personal to the individual driver", True),
+                ("It is allowed for one-off emergencies only", False),
+                ("It is only a problem if an accident occurs", False),
+            ],
+            "explanation": "A private hire driver's licence is personal and non-transferable — letting someone else drive under it is a serious licensing breach regardless of the other person's competence.",
+        },
+        {
+            "topic": "Licensing",
+            "prompt": "Why does TfL require private hire operators, as well as drivers, to be licensed?",
+            "choices": [
+                ("Operator licensing is just a formality with no practical effect", False),
+                ("To ensure the whole private hire chain — booking, vehicle and driver — meets required safety and regulatory standards", True),
+                ("Only to collect additional licensing fees", False),
+                ("Because operators are legally the ones who drive passengers", False),
+            ],
+            "explanation": "Licensing the operator as well as the driver and vehicle closes the loop on accountability across the whole private hire booking chain.",
+        },
+        {
+            "topic": "Licensing",
+            "prompt": "From TfL's perspective, what is the shared purpose of the topographical, SERU and ELR assessments?",
+            "choices": [
+                ("They exist purely as a revenue source for TfL", False),
+                ("To confirm a new driver has the local knowledge, regulatory understanding and language ability needed to serve London passengers safely and professionally", True),
+                ("They are only relevant for drivers working nights", False),
+                ("They replace the need for a driving test", False),
+            ],
+            "explanation": "Together, the three assessments confirm the practical knowledge, regulatory awareness and communication ability TfL considers necessary for safe, professional private hire driving in London.",
+        },
+        {
+            "topic": "Licensing",
+            "prompt": "A driver's vehicle is involved in an accident. What should happen regarding its private hire licence status?",
+            "choices": [
+                ("Nothing — licensing is unaffected by accidents", False),
+                ("The vehicle may need to be assessed or re-inspected before continuing private hire use, depending on the damage", True),
+                ("The driver's own licence is automatically revoked", False),
+                ("Only the insurer needs to be informed, with no licensing implications", False),
+            ],
+            "explanation": "Depending on the extent of any damage, a vehicle involved in an accident may need to be checked or re-inspected before it continues to be used for private hire work.",
+        },
+
+        # --- Further fill-in-the-blank (second content-depth expansion) ---
+        {
+            "topic": "Safeguarding",
+            "question_type": "fill_blank",
+            "prompt": "A driver who overhears a passenger being threatened on a phone call should report the concern to the operator or police once safe, rather than ____ directly.",
+            "accepted_answers": ["intervening", "confronting", "getting involved"],
+            "explanation": "Drivers should not intervene or confront directly — the safe response is to report the concern through the proper channel once it is safe to do so.",
+        },
+        {
+            "topic": "Safeguarding",
+            "question_type": "fill_blank",
+            "prompt": "Drivers are expected to complete safeguarding ____ training as part of becoming and remaining a licensed private hire driver.",
+            "accepted_answers": ["awareness"],
+            "explanation": "Safeguarding awareness training is a standard part of licensing requirements for private hire drivers.",
+        },
+        {
+            "topic": "Safeguarding",
+            "question_type": "fill_blank",
+            "prompt": "If a driver is in doubt about whether something is a genuine safeguarding concern, the safest approach is to ____ it anyway through the proper channel.",
+            "accepted_answers": ["report"],
+            "explanation": "When in doubt, reporting through the proper channel is always the safer choice than staying silent.",
+        },
+        {
+            "topic": "Equality",
+            "question_type": "fill_blank",
+            "prompt": "Refusing to carry a passenger because of their religion is a breach of the Equality Act and is a form of unlawful ____.",
+            "accepted_answers": ["discrimination"],
+            "explanation": "Religion is a protected characteristic, so refusing service on that basis is unlawful discrimination.",
+        },
+        {
+            "topic": "Equality",
+            "question_type": "fill_blank",
+            "prompt": "A driver should offer the same standard of service to every passenger, regardless of ____ characteristics such as race or disability.",
+            "accepted_answers": ["protected"],
+            "explanation": "'Protected characteristics' is the specific term used in the Equality Act 2010 for traits such as race, disability, age, sex and religion.",
+        },
+        {
+            "topic": "Equality",
+            "question_type": "fill_blank",
+            "prompt": "Assuming what help a disabled passenger needs, instead of simply ____ them, can come across as patronising or incorrect.",
+            "accepted_answers": ["asking"],
+            "explanation": "Asking a disabled passenger what help they want, rather than assuming, is the respectful and accurate approach.",
+        },
+        {
+            "topic": "Road safety",
+            "question_type": "fill_blank",
+            "prompt": "Drivers should never attempt to read or send a text message while the vehicle is ____.",
+            "accepted_answers": ["moving"],
+            "explanation": "Reading or sending texts while the vehicle is moving is both illegal and extremely dangerous.",
+        },
+        {
+            "topic": "Road safety",
+            "question_type": "fill_blank",
+            "prompt": "Carrying out a basic vehicle check before a shift, such as checking tyres and lights, helps a driver spot problems ____ they become dangerous.",
+            "accepted_answers": ["before"],
+            "explanation": "Pre-shift checks are designed to catch small problems early, before they develop into something dangerous on the road.",
+        },
+        {
+            "topic": "Road safety",
+            "question_type": "fill_blank",
+            "prompt": "A driver who is unsure a route is safe in poor weather should ____ speed and increase following distance.",
+            "accepted_answers": ["reduce", "lower"],
+            "explanation": "Reducing speed and increasing following distance are the standard, sensible responses to uncertain conditions such as poor weather.",
+        },
+        {
+            "topic": "Professional conduct",
+            "question_type": "fill_blank",
+            "prompt": "A driver should keep passenger conversations and any personal information shared during a journey ____, rather than repeating them to others afterwards.",
+            "accepted_answers": ["confidential", "private"],
+            "explanation": "Respecting passenger confidentiality is a core part of professional conduct expected of a licensed private hire driver.",
+        },
+        {
+            "topic": "Professional conduct",
+            "question_type": "fill_blank",
+            "prompt": "Arriving at a pickup location in good time, where reasonably possible, reflects a driver's ____.",
+            "accepted_answers": ["reliability", "professionalism", "punctuality"],
+            "explanation": "Punctuality and reliability are core expectations of professional conduct for a private hire driver.",
+        },
+        {
+            "topic": "Professional conduct",
+            "question_type": "fill_blank",
+            "prompt": "A driver who receives a complaint should respond ____ rather than arguing with the passenger.",
+            "accepted_answers": ["calmly", "professionally"],
+            "explanation": "Responding calmly and professionally to a complaint, rather than arguing, is the expected standard of conduct.",
+        },
+        {
+            "topic": "Licensing",
+            "question_type": "fill_blank",
+            "prompt": "A driver whose licence has been suspended must not accept any private hire ____ until the suspension is lifted.",
+            "accepted_answers": ["bookings", "work", "jobs"],
+            "explanation": "A suspended licence means the driver is not permitted to accept any private hire bookings until the suspension ends.",
+        },
+        {
+            "topic": "Licensing",
+            "question_type": "fill_blank",
+            "prompt": "TfL may carry out spot ____ of private hire vehicles to confirm they continue to meet licensing standards.",
+            "accepted_answers": ["checks", "inspections"],
+            "explanation": "Spot checks/inspections are one of the ways TfL enforces ongoing compliance with licensing standards, not just at initial licensing.",
+        },
+        {
+            "topic": "Licensing",
+            "question_type": "fill_blank",
+            "prompt": "A new private hire driver must pass the English test, SERU and topographical assessments before being issued a full ____.",
+            "accepted_answers": ["licence", "license"],
+            "explanation": "All three assessments must be passed as part of qualifying for a full TfL private hire driver's licence.",
+        },
+        {
+            "topic": "Licensing",
+            "question_type": "fill_blank",
+            "prompt": "Operating without valid private hire insurance covering hire and ____ is a serious licensing breach.",
+            "accepted_answers": ["reward"],
+            "explanation": "Private hire insurance must specifically cover 'hire and reward' use (carrying fare-paying passengers), not just social/domestic use.",
+        },
+
+        # --- Further reading & understanding (second content-depth expansion) ---
+        {
+            "topic": "Reading & understanding",
+            "question_type": "reading",
+            "passage": (
+                "After dropping off a passenger, a driver discovers a phone left on the back seat. "
+                "Rather than keeping it or leaving it for the next passenger to find, the driver "
+                "contacts the operator straight away, describes the item, and arranges for it to be "
+                "safely returned to its owner through the proper lost-property process."
+            ),
+            "prompt": "According to the passage, what did the driver do correctly on finding the lost phone?",
+            "choices": [
+                ("Kept the phone in case the owner never claimed it", False),
+                ("Contacted the operator promptly and followed the proper lost-property process", True),
+                ("Left the phone in the vehicle for the next passenger to find", False),
+                ("Tried to return the phone directly without telling the operator", False),
+            ],
+            "explanation": "The passage describes the driver reporting the item to the operator straight away and going through the proper lost-property process, rather than keeping it, leaving it, or handling it informally.",
+        },
+        {
+            "topic": "Reading & understanding",
+            "question_type": "reading",
+            "passage": (
+                "After dropping off a passenger, a driver discovers a phone left on the back seat. "
+                "Rather than keeping it or leaving it for the next passenger to find, the driver "
+                "contacts the operator straight away, describes the item, and arranges for it to be "
+                "safely returned to its owner through the proper lost-property process."
+            ),
+            "prompt": "Based on the passage, which of these would have been an inappropriate response to finding the phone?",
+            "choices": [
+                ("Describing the item accurately to the operator", False),
+                ("Keeping the phone or leaving it in the vehicle for someone else to find, rather than reporting it", True),
+                ("Arranging for the item to be returned through the proper process", False),
+                ("Contacting the operator as soon as possible", False),
+            ],
+            "explanation": "The passage makes clear that keeping the item or leaving it unreported would fall short of the proper lost-property process the driver actually followed.",
+        },
+        {
+            "topic": "Reading & understanding",
+            "question_type": "reading",
+            "passage": (
+                "A passenger asks the driver to confirm their name before getting in, since the booking "
+                "app showed a slightly different name to the one printed on the driver's badge. The "
+                "driver calmly explains that the badge shows their full legal name, and reassures the "
+                "passenger by showing that the vehicle registration and booking reference match what "
+                "was confirmed in the app."
+            ),
+            "prompt": "According to the passage, how did the driver reassure the passenger?",
+            "choices": [
+                ("By asking the passenger to cancel and rebook", False),
+                ("By calmly explaining the name discrepancy and showing that the vehicle registration and booking reference matched the app", True),
+                ("By refusing to discuss the name difference", False),
+                ("By asking another driver to take the booking instead", False),
+            ],
+            "explanation": "The passage describes the driver calmly explaining the badge name and confirming the matching vehicle registration and booking reference, which reassured the passenger.",
+        },
+        {
+            "topic": "Reading & understanding",
+            "question_type": "reading",
+            "passage": (
+                "A passenger asks the driver to confirm their name before getting in, since the booking "
+                "app showed a slightly different name to the one printed on the driver's badge. The "
+                "driver calmly explains that the badge shows their full legal name, and reassures the "
+                "passenger by showing that the vehicle registration and booking reference match what "
+                "was confirmed in the app."
+            ),
+            "prompt": "Why is it reasonable for a passenger to check these details before getting into a private hire vehicle?",
+            "choices": [
+                ("It isn't reasonable — passengers shouldn't question the driver's identity", False),
+                ("To confirm they are getting into the correct, licensed vehicle for their booking, which is good passenger safety practice", True),
+                ("Because all bookings are automatically suspicious until checked", False),
+                ("Because the app is usually wrong", False),
+            ],
+            "explanation": "Checking that the vehicle, driver and booking reference match is a sensible passenger-safety habit, not an unreasonable imposition on the driver.",
+        },
     ],
     "topographical": [
         {
@@ -1274,6 +1820,118 @@ SEED_QUESTIONS = {
                 ("It's not something the topographical assessment actually tests", False),
             ],
             "explanation": "The shortest route by distance isn't necessarily legal or drivable — restrictions such as one-way streets must be checked, which is exactly what the real route-planning questions assess.",
+        },
+
+        # --- Further multiple-choice (content-depth expansion) ---
+        {
+            "topic": "Compass directions",
+            "prompt": "You are facing south-west and need to end up travelling north-east. What have you done?",
+            "choices": [
+                ("Turned 90 degrees", False),
+                ("Turned 180 degrees — reversed your direction of travel", True),
+                ("Not changed direction at all", False),
+                ("Turned 45 degrees", False),
+            ],
+            "explanation": "South-west and north-east are directly opposite directions, so getting from one to the other is a 180-degree turn.",
+        },
+        {
+            "topic": "Compass directions",
+            "prompt": "A passenger asks you to head 'roughly north-east' from your current position. Which of these best matches that instruction?",
+            "choices": [
+                ("Directly north only", False),
+                ("Between north and east, leaning toward a 45-degree heading", True),
+                ("Directly south", False),
+                ("Due west", False),
+            ],
+            "explanation": "North-east sits roughly halfway between north and east, around a 45-degree compass heading.",
+        },
+        {
+            "topic": "Map symbols",
+            "prompt": "On a typical road map, what does a symbol showing a tunnel usually indicate for a private hire driver?",
+            "choices": [
+                ("A pedestrian-only area", False),
+                ("A section of road passing underground, which may have restrictions such as height limits", True),
+                ("A permanently closed road", False),
+                ("A speed camera location", False),
+            ],
+            "explanation": "Tunnel symbols mark underground road sections, which can carry restrictions like height limits that matter for vehicle route planning.",
+        },
+        {
+            "topic": "Road rules and restrictions",
+            "prompt": "What does a 'bus gate' restriction typically mean for a private hire driver?",
+            "choices": [
+                ("It is a bus stop with no restriction on other vehicles", False),
+                ("It is a road section that only buses (and usually cyclists/taxis, depending on signage) may use, excluding ordinary private vehicles", True),
+                ("It is a car park reserved for buses only", False),
+                ("It has no practical effect on route planning", False),
+            ],
+            "explanation": "A bus gate restricts a road section to specific vehicle types as shown on the sign — driving through one when not permitted can result in a penalty, so it must be factored into route planning.",
+        },
+        {
+            "topic": "Road rules and restrictions",
+            "prompt": "A road sign shows a width restriction (e.g. '6'6\" width limit'). What should a driver do?",
+            "choices": [
+                ("Ignore it, since private hire vehicles are always exempt", False),
+                ("Check their vehicle's width against the limit and avoid the road if the vehicle exceeds it", True),
+                ("Only worry about it if towing a trailer", False),
+                ("Proceed slowly regardless of vehicle width", False),
+            ],
+            "explanation": "A width restriction applies to any vehicle exceeding the stated limit — drivers must check their own vehicle's width and choose an alternative route if it doesn't comply.",
+        },
+        {
+            "topic": "Route planning",
+            "prompt": "Why might a driver deliberately choose a slightly longer route over the shortest one shown on a map?",
+            "choices": [
+                ("To increase the fare unfairly", False),
+                ("Because the shortest route may be subject to restrictions, closures or heavy congestion that make it slower or illegal to use", True),
+                ("Longer routes are always required by TfL", False),
+                ("There is never a good reason to do this", False),
+            ],
+            "explanation": "A genuinely efficient route accounts for real-world restrictions and congestion, not just raw distance — sometimes a longer route on paper is faster or the only legal option.",
+        },
+        {
+            "topic": "Route planning",
+            "prompt": "A planned route includes a road currently closed for roadworks. What is the correct approach?",
+            "choices": [
+                ("Continue as planned and deal with it on arrival", False),
+                ("Identify a suitable legal alternative before or as soon as the closure is reached", True),
+                ("Reverse the entire journey and start again from the pickup point", False),
+                ("Ignore the closure signage if no one appears to be working", False),
+            ],
+            "explanation": "A driver should plan around a known closure with a suitable legal alternative, rather than ignoring signage or treating the closure as something to improvise around at the last moment.",
+        },
+        {
+            "topic": "Route planning",
+            "prompt": "Why is it useful for a driver to have a general mental map of London's key areas, even when using a satnav?",
+            "choices": [
+                ("It isn't useful — satnavs make background knowledge unnecessary", False),
+                ("It helps the driver sense-check satnav directions and recover quickly if the device fails or gives an odd route", True),
+                ("It is only useful for passing the assessment, not for real driving", False),
+                ("It replaces the need to follow traffic regulations", False),
+            ],
+            "explanation": "Background geographic knowledge lets a driver notice an obviously wrong satnav instruction and cope if the device fails — exactly the skill the topographical assessment is testing.",
+        },
+        {
+            "topic": "Grid references",
+            "prompt": "On a standard map grid reference, which number is given first?",
+            "choices": [
+                ("The vertical (north-south) grid line number", False),
+                ("The horizontal (west-east, 'along the corridor') grid line number", True),
+                ("Whichever number is smaller", False),
+                ("There is no fixed order", False),
+            ],
+            "explanation": "The convention 'along the corridor, up the stairs' means the horizontal (easting/west-east) reference is always given before the vertical (northing) reference.",
+        },
+        {
+            "topic": "London geography",
+            "prompt": "Why does it matter to a private hire driver which side of the Thames a pickup and drop-off are on?",
+            "choices": [
+                ("It doesn't matter — all roads connect freely regardless of the river", False),
+                ("River crossings are limited to specific bridges or tunnels, which significantly affects route choice and journey time", True),
+                ("It only matters for journeys longer than 10 miles", False),
+                ("It affects the fare but never the route", False),
+            ],
+            "explanation": "Because the Thames can only be crossed at specific points, knowing which side a destination is on is essential for choosing a sensible route and estimating journey time accurately.",
         },
     ],
 }

@@ -276,4 +276,63 @@ SPEAKING_PROMPTS = [
             "Avoid describing an informal personal solution, even a well-meaning one — it should go through the operator.",
         ],
     },
+
+    # --- Further prompts (second content-depth expansion) ---
+    {
+        "topic": "Personal & background",
+        "prompt_text": "What would you say are your main strengths as someone who will be dealing with the public every day?",
+        "model_answer": (
+            "I'd say patience and good communication are my main strengths. I'm comfortable talking to "
+            "people from different backgrounds, and I stay calm even when things don't go to plan, which "
+            "I think matters a lot in this kind of work. I'm also quite organised, which helps with "
+            "planning routes and managing my time between bookings."
+        ),
+        "tips": [
+            "Pick two or three strengths and back each one up with a short reason — a list with no explanation sounds rehearsed.",
+            "Tie your strengths back to the job itself (dealing with the public, planning routes) rather than keeping them generic.",
+        ],
+    },
+    {
+        "topic": "Driving & London knowledge",
+        "prompt_text": "How would you plan ahead for a booking during a period you know will be busy, like rush hour or a major event?",
+        "model_answer": (
+            "I'd check for any known events or roadworks in the area beforehand and allow extra time for "
+            "the journey. If I knew a particular road was likely to be very slow, I'd think about an "
+            "alternative in advance rather than deciding at the last minute. I'd also let the passenger "
+            "know if I expected the journey to take longer than usual, so there are no surprises."
+        ),
+        "tips": [
+            "Mention planning ahead of time, not just reacting once stuck in traffic — that's what the question is really asking about.",
+            "Communicating a realistic time estimate to the passenger is a good professional touch to include.",
+        ],
+    },
+    {
+        "topic": "Customer service scenarios",
+        "prompt_text": "A passenger seems anxious about being in an unfamiliar car with a driver they don't know. How would you put them at ease?",
+        "model_answer": (
+            "I'd stay calm, friendly and professional from the moment they get in — confirming their name "
+            "and destination clearly so they know they're in the right car. I might make a little light, "
+            "polite conversation if they seem open to it, but I wouldn't push it if they'd rather stay "
+            "quiet. Showing my badge and keeping the journey smooth and predictable usually helps passengers "
+            "feel more relaxed."
+        ),
+        "tips": [
+            "Mention concrete reassurance steps (confirming name/destination, showing a badge) rather than just saying 'I'd be friendly'.",
+            "Showing you can read the passenger's mood — offering conversation but not forcing it — demonstrates good judgement.",
+        ],
+    },
+    {
+        "topic": "Problem-solving & describing a situation",
+        "prompt_text": "Describe how you would handle a situation where you took a wrong turn and the passenger pointed it out.",
+        "model_answer": (
+            "I'd stay calm, thank the passenger for letting me know, and correct the route as soon as it "
+            "was safe to do so, rather than getting defensive. I'd apologise briefly for the mistake and "
+            "reassure them it wouldn't affect the agreed fare where that applied. Everyone takes a wrong "
+            "turn occasionally — what matters is handling it professionally."
+        ),
+        "tips": [
+            "Thanking the passenger rather than getting defensive is the key behaviour examiners are listening for here.",
+            "A short, genuine apology followed by a practical fix reads better than over-explaining why the mistake happened.",
+        ],
+    },
 ]
