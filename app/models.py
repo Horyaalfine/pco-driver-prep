@@ -272,6 +272,11 @@ class SpeakingPrompt(db.Model):
     model_answer = db.Column(db.Text, nullable=False)
     tips = db.Column(db.JSON, nullable=True)  # list of short strings
     is_active = db.Column(db.Boolean, default=True, nullable=False)
+    # Lazily generated and cached the first time anyone requests it (see the
+    # /question-audio route in app/learning.py) so the real TTS API call only
+    # ever happens once per prompt, not once per playback — a question's text
+    # is fixed, so there's nothing to regenerate after that first request.
+    question_audio = db.Column(db.LargeBinary, nullable=True)
 
 
 class SpeakingGrade(db.Model):

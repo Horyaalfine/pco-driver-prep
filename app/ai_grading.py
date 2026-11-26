@@ -80,6 +80,32 @@ def transcribe_audio(api_key: str, model: str, audio_bytes: bytes, filename: str
     return text
 
 
+def synthesize_speech(api_key: str, model: str, voice: str, text: str) -> bytes:
+    """Read a speaking prompt's question aloud (examiner-style), so practice
+    matches the real interview's listen-then-speak format. Returns raw MP3
+    bytes — callers (see the /question-audio route in app/learning.py) are
+    expected to cache the result, since the input text never changes."""
+    _require_api_key(api_key)
+
+    try:
+        response = requests.post(
+            f"{OPENAI_API_BASE}/audio/speech",
+            headers={
+                "Authorization": f"Bearer {api_key}",
+                "Content-Type": "application/json",
+            },
+            json={"model": model, "voice": voice, "input": text},
+            timeout=REQUEST_TIMEOUT_SECONDS,
+        )
+    except requests.RequestException:
+        raise GradingError("Couldn't reach the text-to-speech service — please try again in a moment.")
+
+    if response.status_code != 200 or not response.content:
+        raise GradingError("The text-to-speech service couldn't read that question — please try again.")
+
+    return response.content
+
+
 def grade_transcript(api_key: str, model: str, question: str, transcript: str) -> dict:
     """Grade a transcript against the rubric. Returns {"score": int, "feedback": str}."""
     _require_api_key(api_key)

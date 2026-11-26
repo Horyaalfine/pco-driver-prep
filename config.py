@@ -72,6 +72,14 @@ class Config:
     OPENAI_API_KEY = os.environ.get("OPENAI_API_KEY", "")
     OPENAI_TRANSCRIBE_MODEL = os.environ.get("OPENAI_TRANSCRIBE_MODEL", "gpt-transcribe")
     OPENAI_GRADING_MODEL = os.environ.get("OPENAI_GRADING_MODEL", "gpt-4o-mini")
+    # Reads each speaking prompt's question aloud (an "examiner" voice), so
+    # practice matches the real interview's listen-then-speak format rather
+    # than the learner reading the question themselves. Cached per prompt
+    # (see SpeakingPrompt.question_audio) so this runs once per question ever,
+    # not once per playback — at $15/1M characters and ~100-150 characters a
+    # question, the one-off cost for the whole prompt bank is a few cents.
+    OPENAI_TTS_MODEL = os.environ.get("OPENAI_TTS_MODEL", "tts-1")
+    OPENAI_TTS_VOICE = os.environ.get("OPENAI_TTS_VOICE", "onyx")
     # Cost/abuse safeguard: a hard cap on graded recordings per user per day.
     # At ~$0.005/recording this is pennies even at the cap, but prevents a
     # runaway script (or a bug) from generating an unbounded API bill.

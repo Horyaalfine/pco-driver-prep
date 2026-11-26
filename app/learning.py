@@ -2,7 +2,7 @@ import random
 from datetime import datetime, timedelta
 from functools import wraps
 
-from flask import Blueprint, current_app, render_template, redirect, url_for, flash, request, abort, session, jsonify
+from flask import Blueprint, current_app, render_template, redirect, url_for, flash, request, abort, session, jsonify, Response
 from flask_login import login_required, current_user
 
 from app.extensions import db
@@ -576,6 +576,35 @@ def speaking_practice_detail(prompt_id):
         module_label=MODULE_LABELS["elr"],
         prompt=prompt,
         next_id=next_id,
+    )
+
+
+@learning_bp.route("/module/elr/speaking/<int:prompt_id>/question-audio")
+@requires_access
+def speaking_practice_question_audio(prompt_id):
+    """Serve the examiner reading this prompt's question aloud, so practice
+    matches the real interview's listen-then-speak format. Generated once via
+    the OpenAI API and cached on the prompt row (SpeakingPrompt.question_audio)
+    — every later request for the same prompt is served straight from the
+    database with no further API calls, since the question text never changes."""
+    prompt = SpeakingPrompt.query.get_or_404(prompt_id)
+
+    if not prompt.question_audio:
+        api_key = current_app.config["OPENAI_API_KEY"]
+        tts_model = current_app.config["OPENAI_TTS_MODEL"]
+        tts_voice = current_app.config["OPENAI_TTS_VOICE"]
+        try:
+            prompt.question_audio = ai_grading.synthesize_speech(
+                api_key, tts_model, tts_voice, prompt.prompt_text
+            )
+        except ai_grading.GradingError as exc:
+            return jsonify({"error": str(exc)}), 502
+        db.session.commit()
+
+    return Response(
+        prompt.question_audio,
+        mimetype="audio/mpeg",
+        headers={"Cache-Control": "public, max-age=31536000, immutable"},
     )
 
 

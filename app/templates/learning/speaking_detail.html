@@ -6,6 +6,16 @@
 <h1 style="margin-top:8px">{{ prompt.prompt_text }}</h1>
 
 <div class="card">
+  <h2 style="margin-top:0">Listen, then answer — like the real interview</h2>
+  <p class="lead">In the real ELR interview, the examiner reads each question aloud rather than showing it to you in writing. Press play to hear this one the same way, then record your own answer — don't read it off the screen above.</p>
+  <div id="question-audio-ui">
+    <button class="btn btn-outline" id="play-question-btn" type="button">&#9658; Play question</button>
+    <span id="question-audio-status" style="margin-left:12px;opacity:0.8"></span>
+    <audio id="question-audio" preload="none" style="display:none"></audio>
+  </div>
+</div>
+
+<div class="card">
   <h2 style="margin-top:0">Record yourself, then listen back</h2>
   <p class="lead">Say your own answer out loud — ideally timed, as you would in the real interview — then play it back before reading the model answer below. Hearing your own fluency and pace is far more useful than reading tips alone.</p>
   <p class="lead" style="font-size:0.9em;opacity:0.8">Your recording stays only in this browser tab and is never uploaded anywhere, unless you choose "Get AI feedback" below — that sends just that one recording off for transcription and scoring, and it isn't kept afterwards. Either way, it disappears as soon as you leave or refresh this page.</p>
@@ -37,6 +47,39 @@
 </div>
 
 <script>
+(function () {
+  const playQuestionBtn = document.getElementById('play-question-btn');
+  const questionAudioStatus = document.getElementById('question-audio-status');
+  const questionAudio = document.getElementById('question-audio');
+  const questionAudioUrl = {{ url_for('learning.speaking_practice_question_audio', prompt_id=prompt.id) | tojson }};
+  let questionAudioLoaded = false;
+
+  playQuestionBtn.addEventListener('click', () => {
+    if (!questionAudioLoaded) {
+      questionAudio.src = questionAudioUrl;
+      questionAudioLoaded = true;
+    }
+    questionAudioStatus.textContent = 'Loading…';
+    playQuestionBtn.disabled = true;
+    questionAudio.play().catch(() => {
+      questionAudioStatus.textContent = "Couldn't play the question audio — please try again, or just read the question above.";
+      playQuestionBtn.disabled = false;
+    });
+  });
+
+  questionAudio.addEventListener('playing', () => {
+    questionAudioStatus.textContent = '';
+    playQuestionBtn.disabled = false;
+    playQuestionBtn.textContent = '▸ Replay question';
+  });
+
+  questionAudio.addEventListener('error', () => {
+    if (!questionAudioLoaded) return; // src not set yet — ignore the initial empty-src error
+    questionAudioStatus.textContent = "Question audio isn't available right now — please just read the question above.";
+    playQuestionBtn.disabled = false;
+  });
+})();
+
 (function () {
   const recordBtn = document.getElementById('record-btn');
   const recordAgainBtn = document.getElementById('record-again-btn');
