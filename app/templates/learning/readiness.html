@@ -1,0 +1,82 @@
+{% extends "base.html" %}
+{% block title %}Readiness — {{ module_label }}{% endblock %}
+{% block content %}
+<h1>Readiness — {{ module_label }}</h1>
+<p class="lead">A concrete picture of where you stand, built from your mock exams and practice answers — not just a question count.</p>
+
+{% if not history %}
+  <div class="card">
+    <h2 style="margin-top:0">No mock exams yet</h2>
+    <p class="lead">Take a mock exam to start building a readiness picture. A single practice session won't show up here — this tracks the timed, scored exam, which is what best mirrors the real assessment.</p>
+    <a class="btn btn-accent" href="{{ url_for('learning.module_home', module_slug=module_slug) }}">Back to module</a>
+  </div>
+{% else %}
+  <div class="card">
+    <h2 style="margin-top:0">Mock exam history</h2>
+    <p class="lead">
+      Latest score: <strong>{{ latest_score }}%</strong>
+      &middot; Best: <strong>{{ best_score }}%</strong>
+      {% if trend is not none %}
+        &middot; {% if trend > 0 %}Trending up (+{{ trend }} points since your first attempt){% elif trend < 0 %}Trending down ({{ trend }} points since your first attempt){% else %}Unchanged since your first attempt{% endif %}
+      {% endif %}
+    </p>
+    <table style="width:100%;border-collapse:collapse">
+      <thead>
+        <tr style="text-align:left;border-bottom:1px solid var(--border)">
+          <th style="padding:6px 8px">Date</th>
+          <th style="padding:6px 8px">Score</th>
+          <th style="padding:6px 8px">Result</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for h in history|reverse %}
+        <tr style="border-bottom:1px solid var(--border)">
+          <td style="padding:6px 8px">{{ h.finished_at.strftime('%d %b %Y, %H:%M') }}</td>
+          <td style="padding:6px 8px">{{ h.score_percent }}%</td>
+          <td style="padding:6px 8px">
+            {% if h.passed %}
+              <span class="pill pill-active">Pass</span>
+            {% else %}
+              <span class="pill pill-inactive">Below pass mark</span>
+            {% endif %}
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+
+  {% if topic_breakdown %}
+  <div class="card">
+    <h2 style="margin-top:0">Accuracy by topic</h2>
+    <p class="lead">Based on your most recent answer to every question you've attempted in this module — weakest topics first.</p>
+    <table style="width:100%;border-collapse:collapse">
+      <thead>
+        <tr style="text-align:left;border-bottom:1px solid var(--border)">
+          <th style="padding:6px 8px">Topic</th>
+          <th style="padding:6px 8px">Accuracy</th>
+          <th style="padding:6px 8px">Questions tried</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for row in topic_breakdown %}
+        <tr style="border-bottom:1px solid var(--border)">
+          <td style="padding:6px 8px">{{ row.topic }}</td>
+          <td style="padding:6px 8px">
+            {% if row.accuracy_percent < 60 %}
+              <span class="pill pill-inactive">{{ row.accuracy_percent }}%</span>
+            {% else %}
+              <span class="pill pill-active">{{ row.accuracy_percent }}%</span>
+            {% endif %}
+          </td>
+          <td style="padding:6px 8px">{{ row.attempted }}</td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+  {% endif %}
+
+  <a class="btn btn-accent" href="{{ url_for('learning.module_home', module_slug=module_slug) }}">Back to module</a>
+{% endif %}
+{% endblock %}

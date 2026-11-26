@@ -82,6 +82,68 @@ def _wrong_question_ids(module_slug):
     return [qid for qid, correct in _latest_answer_correctness(module_slug).items() if not correct]
 
 
+def _readiness_data(module_slug):
+    """Mock-exam score history (for a trend) and a per-topic accuracy
+    breakdown (for 'what's actually weak'), both driven by data already
+    captured via Attempt/AttemptAnswer — no new tables needed. This is what
+    turns 'I did some practice' into a concrete signal of exam readiness,
+    and gives a real reason to keep going if the continuation is offered."""
+    mock_attempts = (
+        Attempt.query.filter_by(user_id=current_user.id, module_slug=module_slug, is_mock_exam=True)
+        .filter(Attempt.finished_at.isnot(None))
+        .order_by(Attempt.finished_at.asc())
+        .all()
+    )
+    history = [
+        {
+            "finished_at": a.finished_at,
+            "score_percent": a.score_percent,
+            "passed": (a.score_percent or 0) >= PASS_MARK_PERCENT,
+        }
+        for a in mock_attempts
+    ]
+
+    trend = None
+    if len(history) >= 2:
+        delta = history[-1]["score_percent"] - history[0]["score_percent"]
+        trend = round(delta, 1)
+
+    # Per-topic accuracy from each question's most recent answer, so a
+    # question re-attempted several times only counts once, at its latest
+    # result — consistent with how the mistake list works.
+    latest = _latest_answer_correctness(module_slug)
+    topic_by_question = dict(
+        db.session.query(Question.id, Question.topic).filter_by(module_slug=module_slug).all()
+    )
+    topic_totals = {}
+    for question_id, is_correct in latest.items():
+        topic = topic_by_question.get(question_id)
+        if not topic:
+            continue
+        stats = topic_totals.setdefault(topic, {"correct": 0, "total": 0})
+        stats["total"] += 1
+        if is_correct:
+            stats["correct"] += 1
+
+    topic_breakdown = [
+        {
+            "topic": topic,
+            "accuracy_percent": round(100 * stats["correct"] / stats["total"]),
+            "attempted": stats["total"],
+        }
+        for topic, stats in topic_totals.items()
+    ]
+    topic_breakdown.sort(key=lambda row: row["accuracy_percent"])
+
+    return {
+        "history": history,
+        "trend": trend,
+        "best_score": max((h["score_percent"] for h in history), default=None),
+        "latest_score": history[-1]["score_percent"] if history else None,
+        "topic_breakdown": topic_breakdown,
+    }
+
+
 def _weighted_sample(questions, latest_correctness, k):
     """Weighted sampling without replacement (A-ES algorithm): a question
     never attempted or last answered wrong gets weight 3, one last answered
@@ -137,6 +199,20 @@ def module_home(module_slug):
         question_count=question_count,
         progress=current_user.progress_for(module_slug),
         mistake_count=len(_wrong_question_ids(module_slug)),
+    )
+
+
+@learning_bp.route("/module/<module_slug>/readiness")
+@requires_access
+def readiness(module_slug):
+    module_slug = _valid_module_or_404(module_slug)
+    data = _readiness_data(module_slug)
+    return render_template(
+        "learning/readiness.html",
+        module_slug=module_slug,
+        module_label=MODULE_LABELS[module_slug],
+        pass_mark=PASS_MARK_PERCENT,
+        **data,
     )
 
 

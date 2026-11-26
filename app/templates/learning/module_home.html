@@ -13,7 +13,7 @@
 </div>
 {% endif %}
 
-<p class="lead">{{ question_count }} questions available{% if progress.best_mock_score is not none %} &middot; best mock score {{ progress.best_mock_score }}%{% endif %}</p>
+<p class="lead">{{ question_count }} questions available{% if progress.best_mock_score is not none %} &middot; best mock score {{ progress.best_mock_score }}%{% endif %} &middot; <a href="{{ url_for('learning.readiness', module_slug=module_slug) }}">view your readiness</a></p>
 
 <div class="card">
   <h2 style="margin-top:0">{% if module_slug == 'elr' %}Reading & writing practice{% else %}Practice{% endif %}</h2>
