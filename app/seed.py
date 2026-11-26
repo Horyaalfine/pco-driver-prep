@@ -1933,6 +1933,223 @@ SEED_QUESTIONS = {
             ],
             "explanation": "Because the Thames can only be crossed at specific points, knowing which side a destination is on is essential for choosing a sensible route and estimating journey time accurately.",
         },
+
+        # --- Real-London local-knowledge layer (content-depth expansion) ---
+        # Unlike the route-planning maps above (deliberately fictional, to
+        # avoid any copyright/licensing risk from depicting real junctions),
+        # this content is general, stable, publicly known geography — river
+        # crossings, the fare-zone system, and the ring-road network — the
+        # kind of background knowledge a real topographical candidate is
+        # expected to have, which the fictional maps alone can't teach.
+        {
+            "topic": "Thames crossings",
+            "prompt": "Which major road tunnel carries traffic under the Thames between the Greenwich peninsula and the Blackwall/Isle of Dogs area in east London?",
+            "choices": [
+                ("Rotherhithe Tunnel", False),
+                ("Blackwall Tunnel", True),
+                ("Dartford Crossing", False),
+                ("Woolwich Ferry", False),
+            ],
+            "explanation": "The Blackwall Tunnel links the Greenwich peninsula (south of the river) with the Blackwall/Isle of Dogs area (north of the river) in east London.",
+        },
+        {
+            "topic": "Thames crossings",
+            "prompt": "The Rotherhithe Tunnel connects Rotherhithe, south of the river, to which area on the north bank?",
+            "choices": [
+                ("Woolwich", False),
+                ("Limehouse", True),
+                ("Richmond", False),
+                ("Croydon", False),
+            ],
+            "explanation": "The Rotherhithe Tunnel runs under the Thames between Rotherhithe on the south bank and Limehouse on the north bank, in east London.",
+        },
+        {
+            "topic": "Thames crossings",
+            "prompt": "Which Thames crossing further east has no bridge or tunnel for general traffic, and is instead a free vehicle ferry?",
+            "choices": [
+                ("Tower Bridge", False),
+                ("Woolwich Ferry", True),
+                ("Blackwall Tunnel", False),
+                ("Vauxhall Bridge", False),
+            ],
+            "explanation": "The Woolwich Ferry is a free vehicle ferry crossing the Thames in east London, filling the gap where there is no bridge or public road tunnel at that point on the river.",
+        },
+        {
+            "topic": "Thames crossings",
+            "prompt": "The Dartford Crossing, well to the east of central London, links which two areas across the Thames?",
+            "choices": [
+                ("Richmond and Kingston", False),
+                ("West Thurrock (Essex) and Dartford (Kent)", True),
+                ("Greenwich and the Isle of Dogs", False),
+                ("Woolwich and North Woolwich", False),
+            ],
+            "explanation": "The Dartford Crossing (the QEII Bridge and tunnels) connects West Thurrock in Essex, north of the river, with Dartford in Kent, south of the river — well outside central London.",
+        },
+        {
+            "topic": "Thames crossings",
+            "prompt": "Which well-known Thames bridge, with its distinctive twin towers, is the most easterly of the main central London road bridges?",
+            "choices": [
+                ("London Bridge", False),
+                ("Tower Bridge", True),
+                ("Southwark Bridge", False),
+                ("Millennium Bridge", False),
+            ],
+            "explanation": "Tower Bridge, easily recognised by its twin towers, sits just downstream (east) of London Bridge and is the most easterly of the main central London road bridges.",
+        },
+        {
+            "topic": "Zones & fare areas",
+            "prompt": "In TfL's fare zone system, which zone covers central London?",
+            "choices": [
+                ("Zone 1", True),
+                ("Zone 3", False),
+                ("Zone 6", False),
+                ("Zone 9", False),
+            ],
+            "explanation": "Zone 1 is the central area; zones 2 and upward form rings progressively further out from the centre.",
+        },
+        {
+            "topic": "Zones & fare areas",
+            "prompt": "How do fare zones 2 and above generally relate to Zone 1?",
+            "choices": [
+                ("Each one is a separate, unconnected area with no relationship to Zone 1", False),
+                ("They form concentric rings around Zone 1, with higher numbers generally further from the centre", True),
+                ("They only exist south of the river", False),
+                ("They are assigned alphabetically rather than by distance", False),
+            ],
+            "explanation": "The fare zones form roughly concentric rings around central Zone 1, with zone number increasing the further out from the centre a station is.",
+        },
+        {
+            "topic": "Zones & fare areas",
+            "prompt": "Roughly how many fare zones does Greater London's rail and Underground network use in total, including the outer ancillary zones?",
+            "choices": [
+                ("4", False),
+                ("6", False),
+                ("9", True),
+                ("12", False),
+            ],
+            "explanation": "There are 9 zones in total (1-9), though most of Greater London itself falls within zones 1-6, with zones 7-9 covering a few outer patches beyond that.",
+        },
+        {
+            "topic": "Zones & fare areas",
+            "prompt": "Which fare zone is Heathrow Airport's Underground stations located in?",
+            "choices": [
+                ("Zone 1", False),
+                ("Zone 3", False),
+                ("Zone 6", True),
+                ("Zone 9", False),
+            ],
+            "explanation": "All of Heathrow's Underground stations (Terminals 2 & 3, Terminal 4, and Terminal 5) sit in Zone 6, at the western edge of the main zone system.",
+        },
+        {
+            "topic": "Zones & fare areas",
+            "prompt": "Even though private hire fares aren't calculated by Oyster/Travelcard zones, why can knowing the zone system still be useful to a driver?",
+            "choices": [
+                ("It isn't useful at all — zones are irrelevant outside the Tube network", False),
+                ("It gives a quick, widely understood way to judge roughly how far a destination is from central London", True),
+                ("It determines which one-way streets a driver may use", False),
+                ("It replaces the need for a satnav", False),
+            ],
+            "explanation": "Zones are a shared reference point passengers and drivers both understand for roughly gauging distance from the centre, even though they don't directly affect a private hire fare.",
+        },
+        {
+            "topic": "Ring roads and orbital routes",
+            "prompt": "Which two main roads together form a ring road around central London's outer suburbs?",
+            "choices": [
+                ("The M25 and the A406", False),
+                ("The North Circular (A406) and the South Circular (A205)", True),
+                ("The Inner Ring Road and the M25", False),
+                ("The A1 and the A2", False),
+            ],
+            "explanation": "The North Circular (A406) and South Circular (A205) together form a ring road around the outer suburbs of central London.",
+        },
+        {
+            "topic": "Ring roads and orbital routes",
+            "prompt": "Since there's no continuous bridge linking them at that point, how do the North Circular and South Circular actually connect across the Thames?",
+            "choices": [
+                ("Via Tower Bridge", False),
+                ("Via the Woolwich Ferry", True),
+                ("They don't connect at all", False),
+                ("Via the Dartford Crossing", False),
+            ],
+            "explanation": "The North Circular and South Circular are linked across the river by the Woolwich Ferry, since there is no road bridge crossing the Thames at that point.",
+        },
+        {
+            "topic": "Ring roads and orbital routes",
+            "prompt": "How does the M25 relate to London, compared with the North and South Circular roads?",
+            "choices": [
+                ("It is the same road, just renamed for part of its length", False),
+                ("It is a much larger orbital motorway encircling almost all of Greater London, well outside the North/South Circular ring", True),
+                ("It only covers north London", False),
+                ("It is shorter than the North Circular", False),
+            ],
+            "explanation": "The M25 is a full orbital motorway with a much larger diameter than the inner North/South Circular ring, encircling almost all of Greater London rather than just its inner suburbs.",
+        },
+        {
+            "topic": "Ring roads and orbital routes",
+            "prompt": "Which of the two inner ring roads is generally known for running through ordinary built-up suburban streets, rather than purpose-built dual carriageway, making it notably congested?",
+            "choices": [
+                ("The North Circular", False),
+                ("The South Circular", True),
+                ("Both run entirely on motorway-standard road", False),
+                ("Neither — both are motorways", False),
+            ],
+            "explanation": "The South Circular largely follows a series of ordinary urban streets rather than a purpose-built route, unlike the more upgraded North Circular, which contributes to its reputation for heavy congestion.",
+        },
+        {
+            "topic": "London geography",
+            "prompt": "Which general direction is Heathrow Airport from central London?",
+            "choices": [
+                ("North", False),
+                ("East", False),
+                ("West", True),
+                ("South", False),
+            ],
+            "explanation": "Heathrow Airport lies to the west of central London.",
+        },
+        {
+            "topic": "London geography",
+            "prompt": "Which general direction is London City Airport from central London?",
+            "choices": [
+                ("West", False),
+                ("East", True),
+                ("North", False),
+                ("South-west", False),
+            ],
+            "explanation": "London City Airport is in the Docklands area, to the east of central London.",
+        },
+        {
+            "topic": "London geography",
+            "prompt": "Which general direction is Richmond from central London?",
+            "choices": [
+                ("South-west", True),
+                ("North-east", False),
+                ("Due east", False),
+                ("Due north", False),
+            ],
+            "explanation": "Richmond sits to the south-west of central London, along the Thames.",
+        },
+        {
+            "topic": "London geography",
+            "prompt": "Which general direction is Romford from central London?",
+            "choices": [
+                ("West", False),
+                ("East", True),
+                ("South", False),
+                ("North-west", False),
+            ],
+            "explanation": "Romford lies to the east of central London, in outer east London/Essex-border territory.",
+        },
+        {
+            "topic": "London geography",
+            "prompt": "Which general direction is Croydon from central London?",
+            "choices": [
+                ("South", True),
+                ("North", False),
+                ("East", False),
+                ("West", False),
+            ],
+            "explanation": "Croydon is a major town to the south of central London.",
+        },
     ],
 }
 
