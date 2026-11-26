@@ -12,7 +12,7 @@
   {% endif %}
   <div class="card" style="margin-bottom:12px">
     <p><strong>{{ p.prompt_text }}</strong></p>
-    <a class="btn btn-outline btn-small" href="{{ url_for('learning.speaking_practice_detail', prompt_id=p.id) }}">View model answer &amp; tips</a>
+    <a class="btn btn-outline btn-small" href="{{ url_for('learning.speaking_practice_detail', prompt_id=p.id) }}">Practice this question</a>
   </div>
 {% endfor %}
 {% endblock %}

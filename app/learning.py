@@ -559,6 +559,26 @@ def speaking_practice_list():
     )
 
 
+@learning_bp.route("/module/elr/speaking/start")
+@requires_access
+def speaking_practice_start():
+    """"Start speaking practice" on the ELR module home page jumps straight
+    into the first prompt (same ordering as the list) rather than landing on
+    the list page first — one less click before the learner is actually
+    listening to a question and recording, which is the point of the
+    exercise. The list page itself is still reachable (e.g. to jump to a
+    specific topic) via "Back to speaking practice" on the detail page."""
+    first_prompt = (
+        SpeakingPrompt.query.filter_by(module_slug="elr", is_active=True)
+        .order_by(SpeakingPrompt.topic, SpeakingPrompt.id)
+        .first()
+    )
+    if not first_prompt:
+        flash("No speaking prompts are available yet.", "info")
+        return redirect(url_for("learning.speaking_practice_list"))
+    return redirect(url_for("learning.speaking_practice_detail", prompt_id=first_prompt.id))
+
+
 @learning_bp.route("/module/elr/speaking/<int:prompt_id>")
 @requires_access
 def speaking_practice_detail(prompt_id):
