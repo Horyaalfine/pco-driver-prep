@@ -3,16 +3,20 @@
 {% block content %}
 <a href="{{ url_for('learning.speaking_practice_list') }}">&larr; Back to speaking practice</a>
 <p class="pill pill-active" style="margin-top:12px">{{ prompt.topic }}</p>
-<h1 style="margin-top:8px">{{ prompt.prompt_text }}</h1>
+<h1 style="margin-top:8px">Speaking practice</h1>
 
 <div class="card">
   <h2 style="margin-top:0">Listen, then answer — like the real interview</h2>
-  <p class="lead">In the real ELR interview, the examiner reads each question aloud rather than showing it to you in writing. Press play to hear this one the same way, then record your own answer — don't read it off the screen above.</p>
+  <p class="lead">In the real ELR interview, the examiner reads each question aloud rather than showing it to you in writing — you never see it written down. Press play to hear this one the same way, then record your own answer.</p>
   <div id="question-audio-ui">
     <button class="btn btn-outline" id="play-question-btn" type="button">&#9658; Play question</button>
     <span id="question-audio-status" style="margin-left:12px;opacity:0.8"></span>
     <audio id="question-audio" preload="none" style="display:none"></audio>
   </div>
+  <details style="margin-top:16px">
+    <summary style="cursor:pointer;opacity:0.8">Show question text (if you can't use audio, or want to check it after answering)</summary>
+    <p style="margin-top:8px"><strong>{{ prompt.prompt_text }}</strong></p>
+  </details>
 </div>
 
 <div class="card">
