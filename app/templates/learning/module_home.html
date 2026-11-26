@@ -38,6 +38,14 @@
   </form>
 </div>
 
+{% if mistake_count %}
+<div class="card">
+  <h2 style="margin-top:0">Review your mistakes ({{ mistake_count }})</h2>
+  <p class="lead">Every question whose most recent answer was wrong, in one place — the fastest way to turn practice time into a pass.</p>
+  <a class="btn btn-accent" href="{{ url_for('learning.review_mistakes', module_slug=module_slug) }}">Review mistakes</a>
+</div>
+{% endif %}
+
 {% if module_slug == 'topographical' %}
 <div class="card">
   <h2 style="margin-top:0">Route planning</h2>

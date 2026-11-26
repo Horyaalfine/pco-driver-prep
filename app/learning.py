@@ -55,6 +55,49 @@ def _valid_module_or_404(module_slug: str) -> str:
     return module_slug
 
 
+def _latest_answer_correctness(module_slug):
+    """Map of question_id -> is_correct, from the current user's most recent
+    answer to that question in this module (practice and mock exams both
+    count). Powers both mistake-review and the spaced-repetition weighting
+    in practice mode."""
+    answers = (
+        db.session.query(AttemptAnswer.question_id, AttemptAnswer.is_correct)
+        .join(Attempt, AttemptAnswer.attempt_id == Attempt.id)
+        .filter(Attempt.user_id == current_user.id, Attempt.module_slug == module_slug)
+        .order_by(AttemptAnswer.id.desc())
+        .all()
+    )
+    latest = {}
+    for question_id, is_correct in answers:
+        # Results are ordered newest-first, so the first time we see a given
+        # question_id is its most recent answer — skip any older ones.
+        if question_id not in latest:
+            latest[question_id] = is_correct
+    return latest
+
+
+def _wrong_question_ids(module_slug):
+    """Questions whose most recent answer (if any) was incorrect — once the
+    learner answers one correctly again, it naturally drops off this list."""
+    return [qid for qid, correct in _latest_answer_correctness(module_slug).items() if not correct]
+
+
+def _weighted_sample(questions, latest_correctness, k):
+    """Weighted sampling without replacement (A-ES algorithm): a question
+    never attempted or last answered wrong gets weight 3, one last answered
+    correctly gets weight 1 — biases practice toward what the learner
+    hasn't mastered yet, without ever fully hiding mastered questions (so
+    they still get occasional spaced revisiting)."""
+    keyed = []
+    for q in questions:
+        correct = latest_correctness.get(q.id)
+        weight = 1 if correct is True else 3
+        key = random.random() ** (1.0 / weight)
+        keyed.append((key, q))
+    keyed.sort(key=lambda pair: pair[0], reverse=True)
+    return [q for _, q in keyed[:k]]
+
+
 @learning_bp.route("/")
 def index():
     if current_user.is_authenticated:
@@ -93,6 +136,7 @@ def module_home(module_slug):
         topics=topics,
         question_count=question_count,
         progress=current_user.progress_for(module_slug),
+        mistake_count=len(_wrong_question_ids(module_slug)),
     )
 
 
@@ -115,8 +159,10 @@ def practice(module_slug):
         flash("No questions available for this topic yet.", "info")
         return redirect(url_for("learning.module_home", module_slug=module_slug))
 
-    random.shuffle(questions)
-    questions = questions[:PRACTICE_BATCH_SIZE]
+    # Spaced-repetition-style weighting: questions the learner hasn't seen or
+    # last got wrong come up more often than ones they've already nailed.
+    latest_correctness = _latest_answer_correctness(module_slug)
+    questions = _weighted_sample(questions, latest_correctness, PRACTICE_BATCH_SIZE)
     attempt = Attempt(user_id=current_user.id, module_slug=module_slug, is_mock_exam=False)
     db.session.add(attempt)
     db.session.commit()
@@ -127,6 +173,44 @@ def practice(module_slug):
         module_label=MODULE_LABELS[module_slug],
         questions=questions,
         attempt_id=attempt.id,
+        review_mode=False,
+    )
+
+
+@learning_bp.route("/module/<module_slug>/review-mistakes")
+@requires_access
+def review_mistakes(module_slug):
+    """Every question in this module whose most recent answer was wrong —
+    the single most direct way to turn practice time into pass-readiness,
+    since it targets exactly what the learner hasn't mastered yet rather
+    than drawing from the whole bank at random."""
+    module_slug = _valid_module_or_404(module_slug)
+    wrong_ids = _wrong_question_ids(module_slug)
+    if not wrong_ids:
+        flash(
+            "No mistakes to review here right now — either you haven't practised "
+            "this module yet, or your most recent answer to everything you've "
+            "tried was correct.",
+            "info",
+        )
+        return redirect(url_for("learning.module_home", module_slug=module_slug))
+
+    questions = Question.query.filter(
+        Question.id.in_(wrong_ids), Question.is_active == True  # noqa: E712
+    ).all()
+    random.shuffle(questions)
+
+    attempt = Attempt(user_id=current_user.id, module_slug=module_slug, is_mock_exam=False)
+    db.session.add(attempt)
+    db.session.commit()
+
+    return render_template(
+        "learning/practice.html",
+        module_slug=module_slug,
+        module_label=MODULE_LABELS[module_slug],
+        questions=questions,
+        attempt_id=attempt.id,
+        review_mode=True,
     )
 
 

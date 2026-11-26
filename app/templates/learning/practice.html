@@ -1,8 +1,13 @@
 {% extends "base.html" %}
-{% block title %}Practice — {{ module_label }}{% endblock %}
+{% block title %}{% if review_mode %}Review mistakes{% else %}Practice{% endif %} — {{ module_label }}{% endblock %}
 {% block content %}
+{% if review_mode %}
+<h1>Review your mistakes — {{ module_label }}</h1>
+<p class="lead">These are the questions whose most recent answer was wrong. Get one right here and it drops off this list.</p>
+{% else %}
 <h1>Practice — {{ module_label }}</h1>
-<p class="lead">Pick an answer to see instant feedback and an explanation.</p>
+<p class="lead">Pick an answer to see instant feedback and an explanation. Questions you haven't seen or got wrong before come up more often than ones you've already nailed.</p>
+{% endif %}
 
 {% for q in questions %}
   <div class="question-card" id="question-{{ q.id }}">
