@@ -8,7 +8,7 @@
 <div class="card">
   <h2 style="margin-top:0">Record yourself, then listen back</h2>
   <p class="lead">Say your own answer out loud — ideally timed, as you would in the real interview — then play it back before reading the model answer below. Hearing your own fluency and pace is far more useful than reading tips alone.</p>
-  <p class="lead" style="font-size:0.9em;opacity:0.8">Your recording stays only in this browser tab and is never uploaded or saved anywhere — it disappears as soon as you leave or refresh this page.</p>
+  <p class="lead" style="font-size:0.9em;opacity:0.8">Your recording stays only in this browser tab and is never uploaded anywhere, unless you choose "Get AI feedback" below — that sends just that one recording off for transcription and scoring, and it isn't kept afterwards. Either way, it disappears as soon as you leave or refresh this page.</p>
 
   <div id="recorder-unsupported" style="display:none">
     <p class="lead">In-browser recording isn't available here (your browser may not support it, or microphone access was denied). You can still rehearse out loud without recording.</p>
@@ -21,6 +21,16 @@
       <audio id="playback-audio" controls style="width:100%;max-width:420px"></audio>
       <div style="margin-top:8px">
         <button class="btn btn-small btn-outline" id="record-again-btn" type="button">Record again</button>
+        <button class="btn btn-small btn-accent" id="get-feedback-btn" type="button">Get AI feedback</button>
+      </div>
+      <div id="feedback-area" style="margin-top:12px;display:none">
+        <p id="feedback-loading" style="opacity:0.8;display:none">Transcribing and scoring your answer&hellip;</p>
+        <div id="feedback-error" class="pill pill-inactive" style="display:none"></div>
+        <div id="feedback-result" style="display:none">
+          <p class="pill pill-active" id="feedback-score" style="font-size:1.1em"></p>
+          <p style="margin-top:8px"><strong>Feedback:</strong> <span id="feedback-text"></span></p>
+          <p style="margin-top:8px;opacity:0.8"><strong>What you said (transcript):</strong> <span id="feedback-transcript"></span></p>
+        </div>
       </div>
     </div>
   </div>
@@ -30,11 +40,20 @@
 (function () {
   const recordBtn = document.getElementById('record-btn');
   const recordAgainBtn = document.getElementById('record-again-btn');
+  const getFeedbackBtn = document.getElementById('get-feedback-btn');
   const statusEl = document.getElementById('record-status');
   const playbackArea = document.getElementById('playback-area');
   const playbackAudio = document.getElementById('playback-audio');
   const recorderUi = document.getElementById('recorder-ui');
   const unsupportedEl = document.getElementById('recorder-unsupported');
+  const feedbackArea = document.getElementById('feedback-area');
+  const feedbackLoading = document.getElementById('feedback-loading');
+  const feedbackError = document.getElementById('feedback-error');
+  const feedbackResult = document.getElementById('feedback-result');
+  const feedbackScore = document.getElementById('feedback-score');
+  const feedbackText = document.getElementById('feedback-text');
+  const feedbackTranscript = document.getElementById('feedback-transcript');
+  const gradeUrl = {{ url_for('learning.speaking_practice_grade', prompt_id=prompt.id) | tojson }};
 
   if (!navigator.mediaDevices || !window.MediaRecorder) {
     recorderUi.style.display = 'none';
@@ -47,6 +66,14 @@
   let seconds = 0;
   let timerHandle = null;
   let currentStream = null;
+  let lastBlob = null;
+
+  function resetFeedbackUi() {
+    feedbackArea.style.display = 'none';
+    feedbackLoading.style.display = 'none';
+    feedbackError.style.display = 'none';
+    feedbackResult.style.display = 'none';
+  }
 
   function formatTime(s) {
     const m = Math.floor(s / 60);
@@ -80,8 +107,8 @@
     mediaRecorder.addEventListener('stop', () => {
       clearInterval(timerHandle);
       stopStream();
-      const blob = new Blob(chunks, { type: 'audio/webm' });
-      playbackAudio.src = URL.createObjectURL(blob);
+      lastBlob = new Blob(chunks, { type: 'audio/webm' });
+      playbackAudio.src = URL.createObjectURL(lastBlob);
       playbackArea.style.display = 'block';
       recordBtn.textContent = 'Start recording';
       statusEl.textContent = '';
@@ -89,6 +116,7 @@
     mediaRecorder.start();
     recordBtn.textContent = 'Stop recording';
     playbackArea.style.display = 'none';
+    resetFeedbackUi();
     statusEl.textContent = formatTime(0);
     timerHandle = setInterval(() => {
       seconds += 1;
@@ -99,6 +127,40 @@
   recordAgainBtn.addEventListener('click', () => {
     playbackArea.style.display = 'none';
     playbackAudio.removeAttribute('src');
+    lastBlob = null;
+    resetFeedbackUi();
+  });
+
+  getFeedbackBtn.addEventListener('click', async () => {
+    if (!lastBlob) return;
+    resetFeedbackUi();
+    feedbackArea.style.display = 'block';
+    feedbackLoading.style.display = 'block';
+    getFeedbackBtn.disabled = true;
+
+    const formData = new FormData();
+    formData.append('audio', lastBlob, 'recording.webm');
+
+    try {
+      const response = await fetch(gradeUrl, { method: 'POST', body: formData });
+      const data = await response.json();
+      feedbackLoading.style.display = 'none';
+      getFeedbackBtn.disabled = false;
+      if (!response.ok || data.error) {
+        feedbackError.textContent = data.error || "Something went wrong getting feedback — please try again.";
+        feedbackError.style.display = 'block';
+        return;
+      }
+      feedbackScore.textContent = `Score: ${data.score}/100`;
+      feedbackText.textContent = data.feedback;
+      feedbackTranscript.textContent = data.transcript;
+      feedbackResult.style.display = 'block';
+    } catch (err) {
+      feedbackLoading.style.display = 'none';
+      getFeedbackBtn.disabled = false;
+      feedbackError.textContent = "Couldn't reach the feedback service — please check your connection and try again.";
+      feedbackError.style.display = 'block';
+    }
   });
 })();
 </script>

@@ -253,10 +253,13 @@ class RouteAttempt(db.Model):
 # which are genuinely reading/writing practice, honestly relabelled on the
 # module page rather than renamed in the DB to avoid churn).
 #
-# This is self-rehearsal content, not a graded exercise: a learner studies
-# the prompt, model answer and tips, then rehearses their own spoken answer
-# out loud. No recording/grading infrastructure — deliberately out of scope
-# for now (see the project's research doc for the considered alternatives).
+# A learner studies the prompt, model answer and tips, then rehearses their
+# own spoken answer out loud — recording and playback happen entirely in the
+# browser (see speaking_detail.html) and nothing is sent anywhere by default.
+# Optionally, the learner can choose to get AI feedback: their recording is
+# then sent to app/ai_grading.py, which transcribes it and grades it against
+# a rubric via the OpenAI API (see Config.OPENAI_* in config.py). That's an
+# explicit, per-recording opt-in — never automatic.
 # ---------------------------------------------------------------------------
 
 class SpeakingPrompt(db.Model):
@@ -269,3 +272,25 @@ class SpeakingPrompt(db.Model):
     model_answer = db.Column(db.Text, nullable=False)
     tips = db.Column(db.JSON, nullable=True)  # list of short strings
     is_active = db.Column(db.Boolean, default=True, nullable=False)
+
+
+class SpeakingGrade(db.Model):
+    """One AI-graded speaking attempt. Only created when the learner explicitly
+    asks for AI feedback on a recording (never automatically) — see
+    app/ai_grading.py and the /grade route in app/learning.py. The transcript
+    is stored (so a learner can look back at what was actually said against
+    the feedback) but the audio itself is never persisted or uploaded anywhere
+    except transiently, in-memory, to OpenAI for this one request."""
+
+    __tablename__ = "speaking_grades"
+
+    id = db.Column(db.Integer, primary_key=True)
+    user_id = db.Column(db.Integer, db.ForeignKey("users.id"), nullable=False, index=True)
+    prompt_id = db.Column(db.Integer, db.ForeignKey("speaking_prompts.id"), nullable=False)
+    transcript = db.Column(db.Text, nullable=False)
+    score = db.Column(db.Integer, nullable=False)  # 0-100
+    feedback = db.Column(db.Text, nullable=False)
+    created_at = db.Column(db.DateTime, default=datetime.utcnow, index=True)
+
+    user = db.relationship("User")
+    prompt = db.relationship("SpeakingPrompt")

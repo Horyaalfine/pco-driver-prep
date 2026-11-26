@@ -61,6 +61,22 @@ class Config:
     MAIL_PASSWORD = os.environ.get("MAIL_PASSWORD", "")
     MAIL_DEFAULT_SENDER = os.environ.get("MAIL_DEFAULT_SENDER", MAIL_USERNAME)
 
+    # --- AI speaking feedback (ELR) ---
+    # Transcribes a learner's recorded speaking answer and grades it against a
+    # rubric via the OpenAI API. Entirely optional at runtime: if OPENAI_API_KEY
+    # is unset, the feature degrades to a clear "not available" message rather
+    # than erroring, so the rest of the app is unaffected. Model names are
+    # configurable because OpenAI periodically retires models (e.g. whisper-1
+    # and gpt-4o-mini-transcribe are both scheduled for shutdown Feb 2027) —
+    # swapping the replacement in is then just an env var change, no deploy.
+    OPENAI_API_KEY = os.environ.get("OPENAI_API_KEY", "")
+    OPENAI_TRANSCRIBE_MODEL = os.environ.get("OPENAI_TRANSCRIBE_MODEL", "gpt-transcribe")
+    OPENAI_GRADING_MODEL = os.environ.get("OPENAI_GRADING_MODEL", "gpt-4o-mini")
+    # Cost/abuse safeguard: a hard cap on graded recordings per user per day.
+    # At ~$0.005/recording this is pennies even at the cap, but prevents a
+    # runaway script (or a bug) from generating an unbounded API bill.
+    SPEAKING_GRADING_DAILY_LIMIT = int(os.environ.get("SPEAKING_GRADING_DAILY_LIMIT", "20"))
+
     # --- Misc ---
     APP_NAME = os.environ.get("APP_NAME", "PCO Driver Prep")
     APP_URL = os.environ.get("APP_URL", "http://localhost:5000")

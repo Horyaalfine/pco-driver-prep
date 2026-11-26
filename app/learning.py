@@ -1,7 +1,8 @@
 import random
+from datetime import datetime, timedelta
 from functools import wraps
 
-from flask import Blueprint, render_template, redirect, url_for, flash, request, abort, session
+from flask import Blueprint, current_app, render_template, redirect, url_for, flash, request, abort, session, jsonify
 from flask_login import login_required, current_user
 
 from app.extensions import db
@@ -12,10 +13,12 @@ from app.models import (
     RouteScenario,
     RouteAttempt,
     SpeakingPrompt,
+    SpeakingGrade,
     MODULE_SLUGS,
     MODULE_LABELS,
 )
 from app.routing import score_route
+from app import ai_grading
 
 learning_bp = Blueprint("learning", __name__)
 
@@ -574,3 +577,52 @@ def speaking_practice_detail(prompt_id):
         prompt=prompt,
         next_id=next_id,
     )
+
+
+@learning_bp.route("/module/elr/speaking/<int:prompt_id>/grade", methods=["POST"])
+@requires_access
+def speaking_practice_grade(prompt_id):
+    """Transcribe + grade one recorded answer via the OpenAI API. Explicit,
+    per-recording opt-in from the learner — never triggered automatically.
+    Returns JSON; errors come back as {"error": "<safe-to-show message>"}
+    with a 4xx/5xx status rather than a page, since this is called via fetch()."""
+    prompt = SpeakingPrompt.query.get_or_404(prompt_id)
+
+    daily_limit = current_app.config["SPEAKING_GRADING_DAILY_LIMIT"]
+    since = datetime.utcnow() - timedelta(days=1)
+    recent_count = SpeakingGrade.query.filter(
+        SpeakingGrade.user_id == current_user.id, SpeakingGrade.created_at >= since
+    ).count()
+    if recent_count >= daily_limit:
+        return jsonify({
+            "error": f"You've reached today's limit of {daily_limit} AI-graded recordings. "
+                     "Please try again tomorrow, or keep rehearsing with self-review in the meantime."
+        }), 429
+
+    audio_file = request.files.get("audio")
+    if not audio_file:
+        return jsonify({"error": "No recording was received — please record an answer first."}), 400
+
+    api_key = current_app.config["OPENAI_API_KEY"]
+    transcribe_model = current_app.config["OPENAI_TRANSCRIBE_MODEL"]
+    grading_model = current_app.config["OPENAI_GRADING_MODEL"]
+
+    try:
+        transcript = ai_grading.transcribe_audio(
+            api_key, transcribe_model, audio_file.read(), audio_file.filename
+        )
+        result = ai_grading.grade_transcript(api_key, grading_model, prompt.prompt_text, transcript)
+    except ai_grading.GradingError as exc:
+        return jsonify({"error": str(exc)}), 502
+
+    grade = SpeakingGrade(
+        user_id=current_user.id,
+        prompt_id=prompt.id,
+        transcript=transcript,
+        score=result["score"],
+        feedback=result["feedback"],
+    )
+    db.session.add(grade)
+    db.session.commit()
+
+    return jsonify({"transcript": transcript, "score": result["score"], "feedback": result["feedback"]})
