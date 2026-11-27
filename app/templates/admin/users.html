@@ -27,8 +27,9 @@
               <input type="number" name="days" value="90" min="1" style="width:70px" aria-label="Days of access">
               <button class="btn btn-small btn-outline" type="submit">Grant access</button>
             </form>
-            <form method="post" action="{{ url_for('admin.reset_user_password', user_id=u.id) }}" style="display:inline" onsubmit="return confirm('Reset this user\'s password?');">
-              <button class="btn btn-small btn-outline" type="submit">Reset password</button>
+            <form method="post" action="{{ url_for('admin.reset_user_password', user_id=u.id) }}" style="display:inline-flex; gap:6px; align-items:center">
+              <input type="text" name="password" placeholder="New password (blank = auto)" style="width:190px" aria-label="New password, optional">
+              <button class="btn btn-small btn-outline" type="submit">Set password</button>
             </form>
           {% endif %}
         </td>

@@ -207,39 +207,45 @@ def users():
 def new_user():
     """Create a customer account directly from the admin panel — useful for
     comp accounts, pilot learners, or support, without waiting on Stripe or
-    asking the learner to self-register. A random password is generated and
-    shown once; the learner resets it themselves via "Forgot password" once
-    email is configured, or an admin can tell them the one-time password now."""
+    asking the learner to self-register. An admin can type a specific password
+    (e.g. one agreed with the learner over the phone) or leave it blank to
+    auto-generate one, shown once on-screen."""
     if request.method == "POST":
         email = (request.form.get("email") or "").strip().lower()
         full_name = (request.form.get("full_name") or "").strip()
         grant_days = request.form.get("grant_days", type=int)
+        chosen_password = (request.form.get("password") or "").strip()
 
         if not email or "@" not in email:
             flash("Enter a valid email address.", "error")
+        elif chosen_password and len(chosen_password) < 8:
+            flash("Password must be at least 8 characters, or leave it blank to auto-generate one.", "error")
         elif User.query.filter_by(email=email).first():
             flash("An account with that email already exists.", "error")
         else:
-            generated_password = secrets.token_urlsafe(12)
+            password = chosen_password or secrets.token_urlsafe(12)
+            was_generated = not chosen_password
             user = User(email=email, full_name=full_name)
-            user.set_password(generated_password)
+            user.set_password(password)
             if grant_days:
                 user.grant_initial_access(grant_days)
             db.session.add(user)
             db.session.commit()
 
-            email_sent = _send_welcome_email(user, generated_password)
+            email_sent = _send_welcome_email(user, password)
 
             msg = f"Account created for {email}."
             if grant_days:
                 msg += f" Access granted for {grant_days} days."
             if email_sent:
                 msg += " Login details were emailed to them."
-            else:
+            elif was_generated:
                 msg += (
                     f" One-time password (not stored anywhere else — copy it now): "
-                    f"{generated_password}"
+                    f"{password}"
                 )
+            else:
+                msg += " They can log in with the password you set."
             flash(msg, "success")
             return redirect(url_for("admin.users"))
 
@@ -263,24 +269,32 @@ def grant_access(user_id):
 @admin_bp.route("/users/<int:user_id>/reset-password", methods=["POST"])
 @admin_required
 def reset_user_password(user_id):
-    """Generate a brand-new password for a customer account and show it
-    on-screen, guaranteed correct — doesn't rely on email delivery (which may
-    not be configured) or on a generated password being copied correctly the
-    first time."""
+    """Set a customer account's password — either to a specific value the
+    admin types in, or auto-generated (shown on-screen) if left blank.
+    Doesn't rely on email delivery, which may not be configured."""
     user = User.query.get_or_404(user_id)
-    generated_password = secrets.token_urlsafe(12)
-    user.set_password(generated_password)
+    chosen_password = (request.form.get("password") or "").strip()
+
+    if chosen_password and len(chosen_password) < 8:
+        flash("Password must be at least 8 characters, or leave it blank to auto-generate one.", "error")
+        return redirect(url_for("admin.users"))
+
+    password = chosen_password or secrets.token_urlsafe(12)
+    was_generated = not chosen_password
+    user.set_password(password)
     db.session.commit()
 
-    email_sent = _send_welcome_email(user, generated_password)
+    email_sent = _send_welcome_email(user, password)
     if email_sent:
         flash(f"Password reset for {user.email} and emailed to them.", "success")
-    else:
+    elif was_generated:
         flash(
             f"Password reset for {user.email}. New password (not stored anywhere "
-            f"else — copy it now): {generated_password}",
+            f"else — copy it now): {password}",
             "success",
         )
+    else:
+        flash(f"Password set for {user.email}. They can log in with the password you chose.", "success")
     return redirect(url_for("admin.users"))
 
 
