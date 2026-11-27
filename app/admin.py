@@ -5,9 +5,10 @@ from functools import wraps
 from flask import Blueprint, current_app, render_template, redirect, url_for, flash, request, abort
 from flask_login import login_required, current_user
 
-from app.extensions import db
+from app.extensions import db, mail
 from app.models import User, Question, Choice, MODULE_SLUGS, MODULE_LABELS
 from app.seed import run_seed
+from flask_mail import Message
 
 admin_bp = Blueprint("admin", __name__)
 
@@ -192,6 +193,91 @@ def toggle_active(question_id):
     question.is_active = not question.is_active
     db.session.commit()
     return redirect(url_for("admin.module_questions", module_slug=question.module_slug))
+
+
+@admin_bp.route("/users")
+@admin_required
+def users():
+    all_users = User.query.order_by(User.created_at.desc()).all()
+    return render_template("admin/users.html", users=all_users)
+
+
+@admin_bp.route("/users/new", methods=["GET", "POST"])
+@admin_required
+def new_user():
+    """Create a customer account directly from the admin panel — useful for
+    comp accounts, pilot learners, or support, without waiting on Stripe or
+    asking the learner to self-register. A random password is generated and
+    shown once; the learner resets it themselves via "Forgot password" once
+    email is configured, or an admin can tell them the one-time password now."""
+    if request.method == "POST":
+        email = (request.form.get("email") or "").strip().lower()
+        full_name = (request.form.get("full_name") or "").strip()
+        grant_days = request.form.get("grant_days", type=int)
+
+        if not email or "@" not in email:
+            flash("Enter a valid email address.", "error")
+        elif User.query.filter_by(email=email).first():
+            flash("An account with that email already exists.", "error")
+        else:
+            generated_password = secrets.token_urlsafe(12)
+            user = User(email=email, full_name=full_name)
+            user.set_password(generated_password)
+            if grant_days:
+                user.grant_initial_access(grant_days)
+            db.session.add(user)
+            db.session.commit()
+
+            email_sent = _send_welcome_email(user, generated_password)
+
+            msg = f"Account created for {email}."
+            if grant_days:
+                msg += f" Access granted for {grant_days} days."
+            if email_sent:
+                msg += " Login details were emailed to them."
+            else:
+                msg += (
+                    f" One-time password (not stored anywhere else — copy it now): "
+                    f"{generated_password}"
+                )
+            flash(msg, "success")
+            return redirect(url_for("admin.users"))
+
+    return render_template("admin/user_form.html")
+
+
+@admin_bp.route("/users/<int:user_id>/grant-access", methods=["POST"])
+@admin_required
+def grant_access(user_id):
+    user = User.query.get_or_404(user_id)
+    days = request.form.get("days", type=int)
+    if not days or days <= 0:
+        flash("Enter a valid number of days.", "error")
+    else:
+        user.grant_initial_access(days)
+        db.session.commit()
+        flash(f"Granted {user.email} {days} more days of access.", "success")
+    return redirect(url_for("admin.users"))
+
+
+def _send_welcome_email(user: User, password: str) -> bool:
+    msg = Message(
+        subject=f"Your {current_app.config['APP_NAME']} account",
+        recipients=[user.email],
+        body=(
+            f"Hi {user.full_name or ''},\n\n"
+            f"An account has been set up for you on {current_app.config['APP_NAME']}.\n\n"
+            f"Email: {user.email}\n"
+            f"Temporary password: {password}\n\n"
+            f"Log in and change your password from your account settings once you're in."
+        ),
+    )
+    try:
+        mail.send(msg)
+        return True
+    except Exception:
+        current_app.logger.exception("Failed to send welcome email to %s", user.email)
+        return False
 
 
 def _save_question_form(module_slug: str, question):

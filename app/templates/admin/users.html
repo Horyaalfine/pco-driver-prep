@@ -1,0 +1,36 @@
+{% extends "base.html" %}
+{% block title %}Users — Admin{% endblock %}
+{% block content %}
+<h1>Users</h1>
+<a class="btn btn-accent" href="{{ url_for('admin.new_user') }}">Create account</a>
+
+<table>
+  <thead><tr><th>Email</th><th>Name</th><th>Role</th><th>Access</th><th></th></tr></thead>
+  <tbody>
+    {% for u in users %}
+      <tr>
+        <td>{{ u.email }}</td>
+        <td>{{ u.full_name or "—" }}</td>
+        <td>{{ "Admin" if u.is_admin else "Customer" }}</td>
+        <td>
+          {% if u.is_admin %}
+            <span class="pill pill-active">Always on (admin)</span>
+          {% elif u.has_access %}
+            <span class="pill pill-active">Active until {{ u.access_until.strftime('%d %b %Y') }}</span>
+          {% else %}
+            <span class="pill pill-inactive">No access</span>
+          {% endif %}
+        </td>
+        <td>
+          {% if not u.is_admin %}
+            <form method="post" action="{{ url_for('admin.grant_access', user_id=u.id) }}" style="display:inline-flex; gap:6px; align-items:center">
+              <input type="number" name="days" value="90" min="1" style="width:70px" aria-label="Days of access">
+              <button class="btn btn-small btn-outline" type="submit">Grant access</button>
+            </form>
+          {% endif %}
+        </td>
+      </tr>
+    {% endfor %}
+  </tbody>
+</table>
+{% endblock %}

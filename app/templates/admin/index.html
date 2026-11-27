@@ -2,6 +2,7 @@
 {% block title %}Admin — {{ app_name }}{% endblock %}
 {% block content %}
 <h1>Content admin</h1>
+<p><a class="btn btn-outline" href="{{ url_for('admin.users') }}">Manage users</a></p>
 <div class="card-grid">
   {% for slug, label in modules.items() %}
     <div class="card">
