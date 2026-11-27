@@ -260,6 +260,30 @@ def grant_access(user_id):
     return redirect(url_for("admin.users"))
 
 
+@admin_bp.route("/users/<int:user_id>/reset-password", methods=["POST"])
+@admin_required
+def reset_user_password(user_id):
+    """Generate a brand-new password for a customer account and show it
+    on-screen, guaranteed correct — doesn't rely on email delivery (which may
+    not be configured) or on a generated password being copied correctly the
+    first time."""
+    user = User.query.get_or_404(user_id)
+    generated_password = secrets.token_urlsafe(12)
+    user.set_password(generated_password)
+    db.session.commit()
+
+    email_sent = _send_welcome_email(user, generated_password)
+    if email_sent:
+        flash(f"Password reset for {user.email} and emailed to them.", "success")
+    else:
+        flash(
+            f"Password reset for {user.email}. New password (not stored anywhere "
+            f"else — copy it now): {generated_password}",
+            "success",
+        )
+    return redirect(url_for("admin.users"))
+
+
 def _send_welcome_email(user: User, password: str) -> bool:
     msg = Message(
         subject=f"Your {current_app.config['APP_NAME']} account",
